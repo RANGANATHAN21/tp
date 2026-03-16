@@ -6,7 +6,6 @@ import tradelog.model.TradeList;
  * Handles all user interaction output for TradeLog.
  */
 public class Ui {
-    private static final String DIVIDER = "____________________________________________________________";
 
     /** Prints the welcome banner shown on startup. */
     public void showWelcome() {
@@ -18,7 +17,7 @@ public class Ui {
 
     /** Prints a horizontal divider line. */
     public void showLine() {
-        System.out.println(DIVIDER);
+        System.out.println("-".repeat(80));
     }
 
     /**
