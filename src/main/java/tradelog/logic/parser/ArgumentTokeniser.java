@@ -11,7 +11,7 @@ public class ArgumentTokeniser {
      * @param prefixes An array of prefixes to look for (e.g., {"t/", "d/", "dir/"})
      * @return A HashMap where the key is the prefix, and the value is the extracted string.
      */
-    public static HashMap<String, String> tokenise(String userInput,String[] prefixes) {
+    public static HashMap<String, String> tokenise(String userInput, String[] prefixes) {
         HashMap<String, String> argumentMap = new HashMap<>();
 
         // Add a leading space to make it easier to find the first prefix
