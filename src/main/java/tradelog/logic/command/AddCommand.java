@@ -13,10 +13,8 @@ import tradelog.ui.Ui;
  * Handles parsing, strict validation of user arguments, and executing the addition.
  */
 public class AddCommand extends Command{
+    public static final String[] REQUIRED_PREFIXES = {"t/", "d/", "dir/", "e/", "x/", "s/", "o/", "strat/"};
     private final HashMap<String, String> parsedArgs;
-    private static final String[] REQUIRED_PREFIXES = {
-            "t/", "d/", "dir/", "e/", "x/", "s/", "o/", "strat/"
-    };
 
     /**
      * Constructs an AddCommand by parsing and validating the raw arguments string.
