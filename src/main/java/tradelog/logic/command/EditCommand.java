@@ -60,8 +60,7 @@ public class EditCommand extends Command {
     @Override
     public void execute(TradeList tradeList, Ui ui, Storage storage) {
         if (targetIndex < 0 || targetIndex >= tradeList.size()) {
-            ui.showError("Trade index out of bounds.");
-            return;
+            throw new TradeLogException("Trade index out of bounds.");
         }
 
         Trade tradeToEdit = tradeList.getTrade(targetIndex);
