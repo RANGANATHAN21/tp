@@ -68,6 +68,7 @@ public class AddCommand extends Command{
         assert addTrade != null : "Trade object should not be null";
         assert addTrade.getTicker().equals(ticker) : "Ticker should match parsed value";
         assert addTrade.getEntryPrice() == entryPrice : "Entry price should match parsed value";
+        assert addTrade.getStrategy().equals(strategy) : "Last field check to ensure full assignment";
     }
 
     /**
@@ -91,6 +92,7 @@ public class AddCommand extends Command{
         Trade lastTrade = tradeList.getTrade(tradeList.size() - 1);
         assert lastTrade.getTicker().equals(addTrade.getTicker()) : "Last trade ticker should match added trade";
         assert lastTrade.getEntryPrice() == addTrade.getEntryPrice() : "Last trade entry price should match added trade";
+        assert lastTrade.getStrategy().equals(addTrade.getStrategy()) : "Last trade strategy should match added trade";
 
         ui.showLine();
         System.out.println("Trade successfully added.");
