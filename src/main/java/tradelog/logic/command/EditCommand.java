@@ -49,65 +49,57 @@ public class EditCommand extends Command {
     }
 
     /**
-     * Executes the edit command by updating the specified trade's fields.
+     * Executes the edit command.
+     * Uses temporary variables to validate the entire updated state before
+     * modifying the original Trade object to maintain data atomicity.
      *
      * @param tradeList The current list of trades.
-     * @param ui        The UI handler for output.
-     * @param storage   The storage handler for persistence.
+     * @param ui        The UI handler for user feedback.
+     * @param storage   The storage handler for data persistence.
      */
     @Override
     public void execute(TradeList tradeList, Ui ui, Storage storage) {
-        try {
-            if (targetIndex < 0 || targetIndex >= tradeList.size()) {
-                ui.showError("Trade index out of bounds.");
-                return;
-            }
-            Trade tradeToEdit = tradeList.getTrade(targetIndex);
-
-            assert tradeToEdit != null : "Retrieved trade should not be null";
-            assert targetIndex < tradeList.size() : "Trade index must be within bounds";
-
-            if (parsedArgs.containsKey("t/")) {
-                tradeToEdit.setTicker(ParserUtil.parseTicker(parsedArgs.get("t/")));
-                assert tradeToEdit.getTicker().equals(parsedArgs.get("t/").toUpperCase()) :
-                        "Ticker should be updated";
-            }
-            if (parsedArgs.containsKey("d/")) {
-                tradeToEdit.setDate(parsedArgs.get("d/"));
-            }
-            if (parsedArgs.containsKey("dir/")) {
-                ParserUtil.validateStopLoss(parsedArgs.get("dir/").trim().toLowerCase(),
-                        tradeToEdit.getEntryPrice(), tradeToEdit.getStopLossPrice());
-                tradeToEdit.setDirection(ParserUtil.parseDirection(parsedArgs.get("dir/")));
-            }
-            if (parsedArgs.containsKey("e/")) {
-                ParserUtil.validatePrices(ParserUtil.parsePrice(parsedArgs.get("e/"), "Entry"), 
-                        tradeToEdit.getStopLossPrice());
-                ParserUtil.validateStopLoss(tradeToEdit.getDirection().trim().toLowerCase(),
-                        ParserUtil.parsePrice(parsedArgs.get("e/"), "Entry"), tradeToEdit.getStopLossPrice());
-                tradeToEdit.setEntryPrice(ParserUtil.parsePrice(parsedArgs.get("e/"), "Entry"));
-            }
-            if (parsedArgs.containsKey("x/")) {
-                ParserUtil.validatePrices(tradeToEdit.getEntryPrice(), ParserUtil.parsePrice(parsedArgs.get("x/"), 
-                        "Exit"));
-                tradeToEdit.setExitPrice(ParserUtil.parsePrice(parsedArgs.get("x/"), "Exit"));
-            }
-            if (parsedArgs.containsKey("s/")) {
-                ParserUtil.validateStopLoss(tradeToEdit.getDirection().trim().toLowerCase(),
-                        tradeToEdit.getEntryPrice(), ParserUtil.parsePrice(parsedArgs.get("s/"), "Stop Loss"));
-                tradeToEdit.setStopLossPrice(ParserUtil.parsePrice(parsedArgs.get("s/"), "Stop Loss"));
-            }
-            if (parsedArgs.containsKey("o/")) {
-                tradeToEdit.setOutcome(parsedArgs.get("o/"));
-            }
-            if (parsedArgs.containsKey("strat/")) {
-                tradeToEdit.setStrategy(parsedArgs.get("strat/"));
-            }
-
-            ui.showTradeUpdated(targetIndex + 1);
-            ui.printTrade(tradeToEdit);
-        } catch (TradeLogException e) {
-            ui.showError(e.getMessage());
+        if (targetIndex < 0 || targetIndex >= tradeList.size()) {
+            throw new TradeLogException("Trade index out of bounds.");
         }
+
+        Trade tradeToEdit = tradeList.getTrade(targetIndex);
+
+        // 1. Parse and stage updated values in local variables (Pre-computation)
+        String newTicker = parsedArgs.containsKey("t/")
+                ? ParserUtil.parseTicker(parsedArgs.get("t/")) : tradeToEdit.getTicker();
+        String newDate = parsedArgs.containsKey("d/")
+                ? parsedArgs.get("d/") : tradeToEdit.getDate();
+        String newDir = parsedArgs.containsKey("dir/")
+                ? ParserUtil.parseDirection(parsedArgs.get("dir/")) : tradeToEdit.getDirection();
+        double newEntry = parsedArgs.containsKey("e/")
+                ? ParserUtil.parsePrice(parsedArgs.get("e/"), "Entry") : tradeToEdit.getEntryPrice();
+        double newExit = parsedArgs.containsKey("x/")
+                ? ParserUtil.parsePrice(parsedArgs.get("x/"), "Exit") : tradeToEdit.getExitPrice();
+        double newStop = parsedArgs.containsKey("s/")
+                ? ParserUtil.parsePrice(parsedArgs.get("s/"), "Stop Loss") : tradeToEdit.getStopLossPrice();
+        String newOutcome = parsedArgs.getOrDefault("o/", tradeToEdit.getOutcome());
+        String newStrat = parsedArgs.getOrDefault("strat/", tradeToEdit.getStrategy());
+
+        // 2. Business Logic Validation (Reusing teammate's methods)
+        // Step A: Ensure entry and stop loss are not the same
+        ParserUtil.validatePrices(newEntry, newStop);
+
+        // Step B: Ensure stop loss is on the correct side
+        // Note: teammate's validateStopLoss expects lowercase "long"/"short"
+        ParserUtil.validateStopLoss(newDir.toLowerCase(), newEntry, newStop);
+
+        // 3. Atomicity: Commit changes only if ALL previous steps (Parsing & Validation) passed
+        tradeToEdit.setTicker(newTicker);
+        tradeToEdit.setDate(newDate);
+        tradeToEdit.setDirection(newDir);
+        tradeToEdit.setEntryPrice(newEntry);
+        tradeToEdit.setExitPrice(newExit);
+        tradeToEdit.setStopLossPrice(newStop);
+        tradeToEdit.setOutcome(newOutcome);
+        tradeToEdit.setStrategy(newStrat);
+
+        ui.showTradeUpdated(targetIndex + 1);
+        ui.printTrade(tradeToEdit);
     }
 }
