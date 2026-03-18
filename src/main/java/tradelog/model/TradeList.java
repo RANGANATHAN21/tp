@@ -30,7 +30,9 @@ public class TradeList {
      * @param index 0-based index of the trade.
      * @return The deleted trade.
      */
-    public Trade deleteTrade(int index) { return trades.remove(index); }
+    public Trade deleteTrade(int index) {
+        return trades.remove(index);
+    }
 
     /**
      * Returns the trade at the specified 0-based index.
