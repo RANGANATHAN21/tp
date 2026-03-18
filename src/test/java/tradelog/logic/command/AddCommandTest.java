@@ -76,4 +76,26 @@ public class AddCommandTest {
                 () -> new AddCommand(invalidArgs));
         assertTrue(exception.getMessage().contains("valid number"));
     }
+
+    /**
+     * Tests if a long trade with stop loss above entry price throws a TradeLogException.
+     */
+    @Test
+    public void constructor_longTradeStopLossAboveEntry_throwsTradeLogException() {
+        String invalidArgs = " t/AAPL d/2026-02-18 dir/long e/180 x/190 s/190 o/win strat/Breakout";
+        TradeLogException exception = assertThrows(TradeLogException.class,
+                () -> new AddCommand(invalidArgs));
+        assertTrue(exception.getMessage().contains("Long position"));
+    }
+
+    /**
+     * Tests if a short trade with stop loss below entry price throws a TradeLogException.
+     */
+    @Test
+    public void constructor_shortTradeStopLossBelowEntry_throwsTradeLogException() {
+        String invalidArgs = " t/AAPL d/2026-02-18 dir/short e/180 x/170 s/170 o/win strat/Breakout";
+        TradeLogException exception = assertThrows(TradeLogException.class,
+                () -> new AddCommand(invalidArgs));
+        assertTrue(exception.getMessage().contains("Short position"));
+    }
 }

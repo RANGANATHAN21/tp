@@ -2,7 +2,7 @@
 
 ## 1. Introduction
 
-**TradeLog** provides a CLI-based, systematic way to log trades and test systems that is faster and more efficient than logging trades on Google Sheets. It has the ability to automatically calculate trade details such as Risk:Reward ratio, ROI, and the Expected Value (EV) of the system across varying timeframes. By eliminating the friction of manual spreadsheet entry, TradeLog helps traders maintain a disciplined journal and identify their mathematical edge with precision.
+**TradeLog** provides a CLI-based, systematic way to log trades and test systems that is faster and more efficient than logging trades on Google Sheets. It has the ability to automatically calculate trade details such as Risk:Reward ratio and the Expected Value (EV) of the system. By eliminating the friction of manual spreadsheet entry, TradeLog helps traders maintain a disciplined journal and identify their mathematical edge with precision.
 
 ## 2. Quick Start
 
@@ -33,7 +33,6 @@
 * **Streak Tracking** – Monitor win/loss streaks to manage psychological state.
 * **Alias Support** – Create short aliases for long ticker symbols.
 * **Testing Mode** – Switch between "Backtest" and "Live" modes to separate datasets.
-* **Data Integrity** – Changes are always immediately saved after every command to prevent data loss.
 
 ### [Version 3.0] - Advanced Analytics & Export
 *Planned features for professional-grade review.*
@@ -49,19 +48,21 @@
 
 ## 4. FAQ
 
-**Q: How do I transfer my data to another computer?** **A:** TradeLog saves changes immediately to a local file. Simply copy the `data/` folder and place it in the same directory as the `TradeLog.jar` file on your new computer.
+**Q: How do I transfer my data to another computer?**
+**A:** TradeLog saves your trades when you exit the application. Simply copy the `data/` folder and place it in the same directory as the `TradeLog.jar` file on your new computer.
 
-**Q: What happens if I enter an invalid date or negative price?** **A:** TradeLog will catch the error, display a `TradeLogException` message, and will not save the invalid entry.
+**Q: What happens if I enter an invalid date or negative price?**
+**A:** TradeLog will display an error message and will not save the invalid entry.
 
 ---
 
 ## 5. Command Summary
 
-| Action | Format |
-| :--- | :--- |
-| **Add Trade** | `add t/TICKER d/DATE dir/DIRECTION e/ENTRY x/EXIT s/STOP o/OUTCOME strat/STRATEGY` |
-| **Edit Trade** | `edit INDEX [t/TICKER] [d/DATE] [dir/DIRECTION] [e/ENTRY] [x/EXIT] [s/STOP] [o/OUTCOME] [strat/STRATEGY]` |
-| **Delete Trade** | `delete INDEX` |
-| **List Trades** | `list` |
-| **Summary** | `summary` |
-| **Exit** | `exit` |
+| Action           | Format                                                                                                    |
+|:-----------------|:----------------------------------------------------------------------------------------------------------|
+| **Add Trade**    | `add t/TICKER d/DATE dir/DIRECTION e/ENTRY x/EXIT s/STOP o/OUTCOME strat/STRATEGY`                        |
+| **Edit Trade**   | `edit INDEX [t/TICKER] [d/DATE] [dir/DIRECTION] [e/ENTRY] [x/EXIT] [s/STOP] [o/OUTCOME] [strat/STRATEGY]` |
+| **Delete Trade** | `delete INDEX`                                                                                            |
+| **List Trades**  | `list`                                                                                                    |
+| **Summary**      | `summary`                                                                                                 |
+| **Exit**         | `exit`                                                                                                    |

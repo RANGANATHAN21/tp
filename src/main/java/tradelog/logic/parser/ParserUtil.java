@@ -79,4 +79,24 @@ public class ParserUtil {
             throw new TradeLogException("Entry price and stop loss price cannot have the same value.");
         }
     }
+
+    /**
+     * Validates that the stop loss price is on the correct side of the entry price.
+     *
+     * @param direction     The trade direction ("long" or "short").
+     * @param entryPrice    The entry price of the trade.
+     * @param stopLossPrice The stop loss price of the trade.
+     * @throws TradeLogException If the stop loss is on the wrong side of the entry price.
+     */
+    public static void validateStopLoss(String direction, double entryPrice, double stopLossPrice)
+            throws TradeLogException {
+        if (direction.equals("long") && stopLossPrice > entryPrice) {
+            throw new TradeLogException(
+                    "Invalid Trade: For a Long position, Stop Loss must be below Entry Price.");
+        }
+        if (direction.equals("short") && stopLossPrice < entryPrice) {
+            throw new TradeLogException(
+                    "Invalid Trade: For a Short position, Stop Loss must be above Entry Price.");
+        }
+    }
 }

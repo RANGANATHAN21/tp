@@ -44,6 +44,7 @@ public class AddCommand extends Command {
         double stopLossPrice = ParserUtil.parsePrice(parsedArgs.get("s/"), "Stop Loss");
 
         ParserUtil.validatePrices(entryPrice, stopLossPrice);
+        ParserUtil.validateStopLoss(parsedArgs.get("dir/").trim().toLowerCase(), entryPrice, stopLossPrice);
 
         String ticker = ParserUtil.parseTicker(parsedArgs.get("t/"));
         String direction = ParserUtil.parseDirection(parsedArgs.get("dir/"));
