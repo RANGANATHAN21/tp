@@ -1,5 +1,6 @@
 package tradelog.ui;
 
+import tradelog.model.Trade;
 import tradelog.model.TradeList;
 
 /**
@@ -7,11 +8,13 @@ import tradelog.model.TradeList;
  */
 public class Ui {
 
+    private static final String DIVIDER = "-".repeat(80);
+
     /** Prints the welcome banner shown on startup. */
     public void showWelcome() {
         showLine();
         System.out.println("Welcome to TradeLog!");
-        System.out.println("Type 'list' to view trades, 'exit' to quit.");
+        System.out.println("Commands: add, list, edit, delete, summary, exit");
         showLine();
     }
 
@@ -24,7 +27,16 @@ public class Ui {
 
     /** Prints a horizontal divider line. */
     public void showLine() {
-        System.out.println("-".repeat(80));
+        System.out.println(DIVIDER);
+    }
+
+    /**
+     * Prints a general message to the user.
+     *
+     * @param message The message to display.
+     */
+    public void showMessage(String message) {
+        System.out.println(message);
     }
 
     /**
@@ -39,10 +51,40 @@ public class Ui {
             System.out.println("No trades logged yet.");
         } else {
             for (int i = 0; i < tradeList.size(); i++) {
-                System.out.println((i + 1) + ". " + tradeList.getTrade(i));
+                System.out.println((i + 1) + ". " + tradeList.getTrade(i).toStorageString());
             }
         }
         showLine();
+    }
+
+    /**
+     * Prints the summary of a single trade.
+     *
+     * @param trade The trade to display.
+     */
+    public void printTrade(Trade trade) {
+        showLine();
+        System.out.println(trade.toSummaryString());
+        showLine();
+    }
+
+    /** Prints a message confirming a trade was added. */
+    public void showTradeAdded() {
+        System.out.println("Trade successfully added.");
+    }
+
+    /** Prints a message confirming a trade was deleted. */
+    public void showTradeDeleted() {
+        System.out.println("Trade successfully deleted.");
+    }
+
+    /**
+     * Prints a message confirming a trade was updated.
+     *
+     * @param index The 1-based index of the updated trade.
+     */
+    public void showTradeUpdated(int index) {
+        System.out.println("Trade " + index + " updated successfully.");
     }
 
     /**

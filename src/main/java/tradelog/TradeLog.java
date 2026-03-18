@@ -2,11 +2,12 @@ package tradelog;
 
 import java.util.Scanner;
 
+import tradelog.exception.TradeLogException;
+import tradelog.logic.command.Command;
 import tradelog.logic.command.ListCommand;
 import tradelog.model.TradeList;
 import tradelog.storage.Storage;
 import tradelog.ui.Ui;
-import tradelog.exception.TradeLogException;
 
 /**
  * Main entry point for the TradeLog application.
@@ -17,7 +18,11 @@ public class TradeLog {
     private final Ui ui;
     private final Storage storage;
 
-    /** Constructs a TradeLog instance with fresh data structures. */
+    /**
+     * Constructs a TradeLog instance, loading existing trades from storage.
+     *
+     * @param filePath Path to the file used for persistent storage.
+     */
     public TradeLog(String filePath) {
         ui = new Ui();
         storage = new Storage(filePath);
@@ -25,11 +30,13 @@ public class TradeLog {
         try {
             loadedTrades = storage.loadTrades();
         } catch (TradeLogException e) {
-            System.out.println("Failed to load saved trades: " + e.getMessage());
+            ui.showError("Failed to load saved trades: " + e.getMessage());
             loadedTrades = new TradeList();
         }
-
         tradeList = loadedTrades;
+        if (!tradeList.isEmpty()) {
+            ui.showMessage("Loaded " + tradeList.size() + " trade(s) from storage.");
+        }
     }
 
     /** Starts the main input loop. */
@@ -39,12 +46,19 @@ public class TradeLog {
         while (scanner.hasNextLine()) {
             String input = scanner.nextLine().trim();
             if (input.equals("list")) {
-                new ListCommand().execute(tradeList, ui, storage);
+                Command command = new ListCommand();
+                command.execute(tradeList, ui, storage);
+            } else if (!input.isEmpty()) {
+                ui.showError("Unknown command: " + input);
             }
         }
-
         scanner.close();
-        storage.saveTrades(tradeList);
+        try {
+            storage.saveTrades(tradeList);
+            ui.showMessage("Trades saved. Goodbye!");
+        } catch (TradeLogException e) {
+            ui.showError(e.getMessage());
+        }
     }
 
     /**

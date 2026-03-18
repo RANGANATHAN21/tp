@@ -2,8 +2,8 @@ package tradelog;
 
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -22,14 +22,14 @@ class TradeLogTest {
     @Test
     public void run_onStart_showsWelcomeMessage() {
         System.setIn(new ByteArrayInputStream("".getBytes()));
-        String output = captureOutput(() -> new TradeLog("./data/trades.txt").run());
+        String output = captureOutput(() -> new TradeLog("./data/test_trades.txt").run());
         assertTrue(output.contains("Welcome to TradeLog!"));
     }
 
     @Test
     public void run_listCommand_showsEmptyMessage() {
         System.setIn(new ByteArrayInputStream("list\n".getBytes()));
-        String output = captureOutput(() -> new TradeLog("./data/trades.txt").run());
+        String output = captureOutput(() -> new TradeLog("./data/test_trades.txt").run());
         assertTrue(output.contains("No trades logged yet."));
     }
 }
