@@ -50,23 +50,6 @@ public class ParserUtil {
     }
 
     /**
-     * Validates the consistency between trade direction and price risk parameters.
-     * * @param direction The formatted direction ("Long" or "Short").
-     * @param entry The entry price.
-     * @param stopLoss The stop loss price.
-     * @throws TradeLogException If Long: Entry <= Stop Loss, or if Short: Entry >= Stop Loss.
-     */
-    public static void validateDirection(String direction, double entry, double stopLoss)
-            throws TradeLogException {
-        if (direction.equals("Long") && entry <= stopLoss) {
-            throw new TradeLogException("Invalid Risk: For Long, Entry must be > Stop Loss!");
-        }
-        if (direction.equals("Short") && entry >= stopLoss) {
-            throw new TradeLogException("Invalid Risk: For Short, Entry must be < Stop Loss!");
-        }
-    }
-
-    /**
      * Validates that the entry price and stop loss price are not equal.
      *
      * @param entryPrice    The entry price of the trade.

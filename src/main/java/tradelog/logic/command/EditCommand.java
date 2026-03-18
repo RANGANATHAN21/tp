@@ -83,9 +83,13 @@ public class EditCommand extends Command {
             String newOutcome = parsedArgs.getOrDefault("o/", tradeToEdit.getOutcome());
             String newStrat = parsedArgs.getOrDefault("strat/", tradeToEdit.getStrategy());
 
-            // 2. Business Logic Validation (The Guard)
-            // Ensures that Entry and Stop Loss relationship matches the Direction (Long/Short)
-            ParserUtil.validateDirection(newDir, newEntry, newStop);
+            // 2. Business Logic Validation (Reusing teammate's methods)
+            // Step A: Ensure entry and stop loss are not the same
+            ParserUtil.validatePrices(newEntry, newStop);
+
+            // Step B: Ensure stop loss is on the correct side
+            // Note: teammate's validateStopLoss expects lowercase "long"/"short"
+            ParserUtil.validateStopLoss(newDir.toLowerCase(), newEntry, newStop);
 
             // 3. Atomicity: Commit changes only if ALL previous steps (Parsing & Validation) passed
             tradeToEdit.setTicker(newTicker);
