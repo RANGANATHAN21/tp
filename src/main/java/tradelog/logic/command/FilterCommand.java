@@ -44,7 +44,7 @@ public class FilterCommand extends Command {
         assert tradeList != null : "TradeList should not be null";
         assert ui != null : "Ui should not be null";
 
-        TradeList filteredTradeList = new TradeList();
+        java.util.List<Integer> matchingIndices = new java.util.ArrayList<>();
 
         for (int i = 0; i < tradeList.size(); i++) {
             Trade trade = tradeList.getTrade(i);
@@ -53,14 +53,18 @@ public class FilterCommand extends Command {
             boolean matchesDate = date.isEmpty() || trade.getDate().equals(date);
 
             if (matchesTicker && matchesStrategy && matchesDate) {
-                filteredTradeList.addTrade(trade);
+                matchingIndices.add(i);
             }
         }
 
-        if (filteredTradeList.isEmpty()) {
+        if (matchingIndices.isEmpty()) {
             ui.showMessage("No trades match the filter criteria.");
         } else {
-            ui.printTradeList(filteredTradeList);
+            ui.showLine();
+            for (int index : matchingIndices) {
+                System.out.println((index + 1) + ". " + tradeList.getTrade(index));
+            }
+            ui.showLine();
         }
     }
 }
