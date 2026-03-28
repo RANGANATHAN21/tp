@@ -147,6 +147,22 @@ public class Ui {
     }
 
     /**
+     * Reads a password from the user.
+     *
+     * @param prompt The prompt to display.
+     * @return The password entered by the user.
+     */
+    public String readPassword(String prompt) {
+        System.out.print(prompt);
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
+        if (scanner.hasNextLine()) {
+            return scanner.nextLine();
+        }
+
+        return "";
+    }
+
+    /**
      * Prints an error message to the user.
      *
      * @param message The error message to display.

@@ -20,7 +20,7 @@ import tradelog.model.TradeList;
 public class Storage {
 
     private static final String ALGORITHM = "AES";
-    private static final String KEY = "ssshhhhhhhhhhh!!"; // 16-byte key for AES-128
+    private static final String KEY = "secretKeyForAES!"; // 16-byte key for AES-128
 
     /** Path to the file used for persistent storage. */
     private final String filePath;
@@ -112,6 +112,7 @@ public class Storage {
                 if (line.trim().isEmpty()) {
                     continue;
                 }
+
                 try {
                     String decryptedLine = decrypt(line);
                     String[] parts = decryptedLine.split(" \\| ");
