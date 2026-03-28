@@ -54,8 +54,8 @@ public class TradeLog {
     /** Starts the main input loop. */
     public void run() {
         ui.showWelcome();
-        while (scanner.hasNextLine()) {
-            String input = scanner.nextLine().trim();
+        String input;
+        while ((input = ui.readCommand()) != null) {
             if (input.isEmpty()) {
                 ui.showError("Command cannot be empty.");
                 continue;
@@ -64,26 +64,21 @@ public class TradeLog {
                 Command command = Parser.parseCommand(input);
                 command.execute(tradeList, ui, storage);
                 if (command.isExit()) {
-                    try {
-                        storage.saveTrades(tradeList);
-                        ui.showMessage("Trades saved. Goodbye!");
-                    } catch (TradeLogException e) {
-                        ui.showError(e.getMessage());
-                    }
-                    scanner.close();
-                    return;
+                    break;
                 }
             } catch (TradeLogException e) {
                 ui.showError(e.getMessage());
             }
         }
-        scanner.close();
+        
         try {
             storage.saveTrades(tradeList);
+            ui.showGoodbye();
             ui.showMessage("Trades saved. Goodbye!");
         } catch (TradeLogException e) {
             ui.showError(e.getMessage());
         }
+        ui.closeScanner();
     }
 
     /**

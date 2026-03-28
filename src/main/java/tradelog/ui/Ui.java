@@ -13,6 +13,19 @@ public class Ui {
 
     private static final String DIVIDER = "-".repeat(80);
     private static final Logger logger = Logger.getLogger(Ui.class.getName());
+    private final java.util.Scanner scanner = new java.util.Scanner(System.in);
+
+    /**
+    * Reads a command from the user.
+    *
+    * @return The command entered by the user.
+    */
+    public String readCommand() {
+        if (scanner.hasNextLine()) {
+            return scanner.nextLine().trim();
+        }
+        return "";
+    }
 
     /** Prints the welcome banner shown on startup. */
     public void showWelcome() {
@@ -154,11 +167,9 @@ public class Ui {
      */
     public String readPassword(String prompt) {
         System.out.print(prompt);
-        java.util.Scanner scanner = new java.util.Scanner(System.in);
         if (scanner.hasNextLine()) {
             return scanner.nextLine();
         }
-
         return "";
     }
 
@@ -175,5 +186,10 @@ public class Ui {
         showLine();
         System.out.println("Error: " + message);
         showLine();
+    }
+
+    public void closeScanner() {
+        scanner.close();
+        logger.log(Level.INFO, "Scanner closed.");
     }
 }
