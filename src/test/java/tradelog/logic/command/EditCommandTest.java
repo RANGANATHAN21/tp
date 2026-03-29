@@ -33,6 +33,24 @@ public class EditCommandTest {
         storage = new Storage("test_edit_storage.txt");
     }
 
+    /**
+     * Performs a deep state comparison of a trade at a specific index against expected values.
+     * This is used to verify "Atomicity": ensuring that no single field has been mutated after a failed command.
+     */
+    private void assertTradeUnchanged(int index, String ticker, String date, String dir,
+                                      double entry, double exit, double stop,
+                                      String outcome, String strat) {
+        Trade current = tradeList.getTrade(index);
+        assertEquals(ticker, current.getTicker(), "Atomicity Failure: Ticker should not be modified");
+        assertEquals(date, current.getDate(), "Atomicity Failure: Date should not be modified");
+        assertEquals(dir, current.getDirection(), "Atomicity Failure: Direction should not be modified");
+        assertEquals(entry, current.getEntryPrice(), "Atomicity Failure: Entry price should not be modified");
+        assertEquals(exit, current.getExitPrice(), "Atomicity Failure: Exit price should not be modified");
+        assertEquals(stop, current.getStopLossPrice(), "Atomicity Failure: Stop loss price should not be modified");
+        assertEquals(outcome, current.getOutcome(), "Atomicity Failure: Outcome should not be modified");
+        assertEquals(strat, current.getStrategy(), "Atomicity Failure: Strategy should not be modified");
+    }
+
     @Test
     public void execute_validEdit_tradeUpdatedSuccessfully() throws TradeLogException {
         // User wants to update the exit price to 175.0 and the outcome to WIN
@@ -85,9 +103,46 @@ public class EditCommandTest {
         assertEquals("AAPL", tradeList.getTrade(0).getTicker());
     }
 
+    /**
+     * Simulates a complex partial-failure scenario where multiple valid prefixes are followed by an invalid one.
+     * Confirms that the internal state of the Trade object remains identical to its pre-execution state.
+     */
+    @Test
+    public void execute_complexInvalidEdit_fullStateMaintained() {
+        // Attempting to change multiple fields, but failing due to an invalid outcome (UNKNOWN)
+        EditCommand command = new EditCommand("1 t/MSFT d/2025-01-01 e/500.0 o/UNKNOWN");
+
+        assertThrows(TradeLogException.class, () -> command.execute(tradeList, ui, storage));
+
+        // Verify that even if the first few prefixes were correct, the whole trade remains in its original state
+        assertTradeUnchanged(0, "AAPL", "2023-10-10", "long", 150.0, 160.0, 140.0, "Open", "Trend");
+    }
+
     @Test
     public void execute_indexOutOfBounds_throwsTradeLogException() {
         EditCommand command = new EditCommand("10 t/MSFT");
         assertThrows(TradeLogException.class, () -> command.execute(tradeList, ui, storage));
+    }
+
+    /**
+     * Verifies that editing a second trade works correctly while index 0 remains unchanged.
+     * Also used to provide diverse parameter values to eliminate IDE static analysis warnings.
+     */
+    @Test
+    public void execute_editSecondTrade_success() throws TradeLogException {
+        // Add a second trade with completely different values, including Outcome "WIN"
+        Trade secondTrade = new Trade("TSLA", "2024-01-01", "short", 250.0, 230.0, 260.0, "WIN", "Swing");
+        tradeList.addTrade(secondTrade);
+
+        // Edit the second trade's ticker (Index 1 in list, "2" in user input)
+        EditCommand command = new EditCommand("2 t/MSFT");
+        command.execute(tradeList, ui, storage);
+
+        // 1. Verify index 0 remains exactly as it was (Outcome is "Open")
+        assertTradeUnchanged(0, "AAPL", "2023-10-10", "long", 150.0, 160.0, 140.0, "Open", "Trend");
+
+        // 2. Verify index 1 matches its new state (Outcome is "WIN")
+        // This second call with "WIN" will eliminate the 'outcome is always Open' warning
+        assertTradeUnchanged(1, "MSFT", "2024-01-01", "short", 250.0, 230.0, 260.0, "WIN", "Swing");
     }
 }
