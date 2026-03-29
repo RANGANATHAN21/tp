@@ -22,7 +22,8 @@ public class ProfileManager {
             String currentPath = baseDir + "/" + baseName + suffix + ".txt";
             File currentFile = new File(currentPath);
             
-            // TODO: Prompt user to retry password entry if file exists but password is wrong, instead of creating new profile immediately
+            // TODO: Prompt user to retry password entry if file exists but password is wrong,
+            // instead of creating new profile immediately
             if (!currentFile.exists()) {
                 String message = (fileIndex == 0) ? ("No existing profile found. Creating new profile...") :
                     ("No profile found for the entered password. Creating new profile...");

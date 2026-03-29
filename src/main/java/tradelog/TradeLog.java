@@ -63,7 +63,6 @@ public class TradeLog {
         
         try {
             storage.saveTrades(tradeList);
-            ui.showGoodbye();
             ui.showMessage("Trades saved. Goodbye!");
         } catch (TradeLogException e) {
             ui.showError(e.getMessage());
