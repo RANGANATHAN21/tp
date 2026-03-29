@@ -21,12 +21,17 @@ public class SummaryCommand extends Command {
      */
     @Override
     public void execute(TradeList tradeList, Ui ui, Storage storage) {
+        assert tradeList != null : "TradeList should not be null when executing summary";
+        assert ui != null : "Ui should not be null when executing summary";
+
         if (tradeList.isEmpty()) {
             ui.showSummaryEmpty();
             return;
         }
 
         int totalTrades = tradeList.size();
+        assert totalTrades > 0 : "totalTrades must be greater than 0 for calculations";
+
         int winningTrades = 0;
         int losingTrades = 0;
         double totalWinR = 0;
@@ -47,6 +52,8 @@ public class SummaryCommand extends Command {
                 totalLossR += Math.abs(rr);
             }
         }
+
+        assert (winningTrades + losingTrades) <= totalTrades : "Win/Loss count exceeds total trades";
 
         double winRate = ((double) winningTrades / totalTrades) * 100;
         assert winRate >= 0 && winRate <= 100 : "Win rate should be between 0% and 100%";

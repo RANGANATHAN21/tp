@@ -8,6 +8,7 @@ import tradelog.logic.command.EditCommand;
 import tradelog.logic.command.ExitCommand;
 import tradelog.logic.command.ListCommand;
 import tradelog.logic.command.SummaryCommand;
+import tradelog.logic.command.FilterCommand;
 
 /**
  * Parses raw user input and translates it into executable Command objects.
@@ -31,6 +32,7 @@ public class Parser {
         case "add" -> new AddCommand(arguments);
         case "delete" -> new DeleteCommand(arguments);
         case "edit" -> new EditCommand(arguments);
+        case "filter" -> new FilterCommand(arguments);
         case "summary" -> new SummaryCommand();
         case "exit" -> new ExitCommand();
         default -> throw new TradeLogException(

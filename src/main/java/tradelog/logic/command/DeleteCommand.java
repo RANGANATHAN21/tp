@@ -44,6 +44,10 @@ public class DeleteCommand extends Command {
      */
     @Override
     public void execute(TradeList tradeList, Ui ui, Storage storage) {
+        assert tradeList != null : "TradeList should not be null when executing delete";
+        assert ui != null : "Ui should not be null when executing delete";
+        assert tradeIndex > 0 : "tradeIndex should be a positive integer";
+
         int initialSize = tradeList.size();
         try {
             Trade deletedTrade = tradeList.deleteTrade(tradeIndex - 1);

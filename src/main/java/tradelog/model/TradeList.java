@@ -12,7 +12,7 @@ public class TradeList {
 
     /** Constructs an empty TradeList. */
     public TradeList() {
-        this.trades = new ArrayList<>();
+        trades = new ArrayList<>();
     }
 
     /**

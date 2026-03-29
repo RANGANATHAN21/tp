@@ -42,7 +42,7 @@ public class EditCommand extends Command {
             throw new TradeLogException("The trade index must be a valid number.");
         }
         String prefixArgs = (parts.length > 1) ? parts[1] : "";
-        this.parsedArgs = ArgumentTokeniser.tokenise(prefixArgs, ACCEPTED_PREFIXES);
+        parsedArgs = ArgumentTokeniser.tokenise(prefixArgs, ACCEPTED_PREFIXES);
         if (parsedArgs.isEmpty()) {
             throw new TradeLogException("At least one field must be specified to edit.");
         }
@@ -58,12 +58,17 @@ public class EditCommand extends Command {
      * @param storage   The storage handler for data persistence.
      */
     @Override
-    public void execute(TradeList tradeList, Ui ui, Storage storage) throws TradeLogException{
-        if (targetIndex < 0 || targetIndex >= tradeList.size()) {
+    public void execute(TradeList tradeList, Ui ui, Storage storage) {
+        assert tradeList != null : "TradeList should not be null when executing edit";
+        assert ui != null : "Ui should not be null when executing edit";
+        assert targetIndex >= 0 : "targetIndex should be 0 or greater (0-based)";
+
+        if (targetIndex >= tradeList.size()) {
             throw new TradeLogException("Trade index out of bounds.");
         }
 
         Trade tradeToEdit = tradeList.getTrade(targetIndex);
+        assert tradeToEdit != null : "Trade object to edit should not be null";
 
         // 1. Parse and stage updated values in local variables (Pre-computation)
         String newTicker = parsedArgs.containsKey("t/")

@@ -1,9 +1,16 @@
 package tradelog.logic.command;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import tradelog.exception.TradeLogException;
+import tradelog.model.Trade;
+import tradelog.model.TradeList;
+import tradelog.storage.Storage;
+import tradelog.ui.Ui;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,6 +19,47 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Ensures that missing or blank prefixes correctly throw exceptions.
  */
 public class AddCommandTest {
+
+    /** The list of trades used as the testing environment. */
+    private TradeList tradeList;
+
+    /** A dummy UI instance to satisfy command dependencies without crashing. */
+    private Ui dummyUi;
+
+    /** A dummy storage instance to satisfy command dependencies. */
+    private Storage dummyStorage;
+
+    /**
+     * Initializes a fresh environment before each test.
+     * Sets up an empty trade list and dummy objects to pass the execute method's assertions.
+     */
+    @BeforeEach
+    public void setUp() {
+        tradeList = new TradeList();
+        dummyUi = new Ui();
+        dummyStorage = new Storage("dummy_add_storage.txt");
+    }
+
+    /**
+     * Tests the execution of a valid AddCommand.
+     * Verifies that the trade is successfully added to the TradeList and the fields match.
+     *
+     * @throws TradeLogException If the command fails to parse valid input.
+     */
+    @Test
+    public void execute_validCommand_tradeAddedSuccessfully() throws TradeLogException {
+        String validArgs = " t/AAPL d/2026-02-18 dir/long e/180 x/190 s/170 o/win strat/Breakout";
+        AddCommand command = new AddCommand(validArgs);
+
+        command.execute(tradeList, dummyUi, dummyStorage);
+
+        assertEquals(1, tradeList.size(), "TradeList should have 1 trade after execution.");
+
+        Trade addedTrade = tradeList.getTrade(0);
+        assertEquals("AAPL", addedTrade.getTicker(), "Ticker should match the input.");
+        assertEquals("Long", addedTrade.getDirection(), "Direction should match the input.");
+        assertEquals(180.0, addedTrade.getEntryPrice(), "Entry price should match the input.");
+    }
 
     /**
      * Tests if a perfectly formatted command string is accepted without throwing any exceptions.

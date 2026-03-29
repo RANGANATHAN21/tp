@@ -29,6 +29,7 @@ public class AddCommand extends Command {
      * @throws TradeLogException If any required prefix is missing or blank.
      */
     public AddCommand(String arguments) throws TradeLogException {
+        assert arguments != null : "Raw arguments string should not be null";
         HashMap<String, String> parsedArgs = ArgumentTokeniser.tokenise(arguments, REQUIRED_PREFIXES);
         for (String prefix : REQUIRED_PREFIXES) {
             if (!parsedArgs.containsKey(prefix)) {
@@ -70,6 +71,9 @@ public class AddCommand extends Command {
      */
     @Override
     public void execute(TradeList tradeList, Ui ui, Storage storage) {
+        assert tradeList != null : "TradeList should not be null when executing add";
+        assert ui != null : "Ui should not be null when executing add";
+        assert addTrade != null : "addTrade object should have been successfully created in constructor";
         int initialSize = tradeList.size();
 
         tradeList.addTrade(addTrade);

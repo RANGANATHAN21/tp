@@ -29,8 +29,27 @@ public class EditCommandTest {
                 150.0, 160.0, 140.0, "Open", "Trend");
         tradeList.addTrade(initialTrade);
 
-        storage = null;
-        ui = null; // UI is null because execute should throw exception before using it
+        ui = new Ui();
+        storage = new Storage("test_edit_storage.txt");
+    }
+
+    @Test
+    public void execute_validEdit_tradeUpdatedSuccessfully() throws TradeLogException {
+        // User wants to update the exit price to 175.0 and the outcome to WIN
+        EditCommand command = new EditCommand("1 x/175.0 o/WIN");
+
+        command.execute(tradeList, ui, storage);
+
+        Trade updatedTrade = tradeList.getTrade(0);
+
+        // Verify that the specified fields were updated
+        assertEquals(175.0, updatedTrade.getExitPrice(), "Exit price should be updated to 175.0");
+        assertEquals("WIN", updatedTrade.getOutcome(), "Outcome should be updated to WIN");
+
+        // Verify that the OTHER fields remained exactly the same
+        assertEquals("AAPL", updatedTrade.getTicker(), "Ticker should remain unchanged");
+        assertEquals("2023-10-10", updatedTrade.getDate(), "Date should remain unchanged");
+        assertEquals(150.0, updatedTrade.getEntryPrice(), "Entry price should remain unchanged");
     }
 
     @Test

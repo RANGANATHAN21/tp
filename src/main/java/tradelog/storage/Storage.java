@@ -37,8 +37,8 @@ public class Storage {
         try {
             File file = new File(filePath);
             if (file.getParentFile() != null && !file.getParentFile().exists()) {
-                boolean dirCreated = file.getParentFile().mkdirs();
-                if (!dirCreated) {
+                boolean isDirCreated = file.getParentFile().mkdirs();
+                if (!isDirCreated) {
                     throw new TradeLogException("Failed to create directory: "
                             + file.getParentFile().getPath());
                 }

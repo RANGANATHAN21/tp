@@ -247,7 +247,7 @@ public class Trade {
      * @param rawDir The raw direction string (e.g. "long", "SHORT").
      */
     public void setDirection(String rawDir) {
-        this.direction = rawDir.substring(0, 1).toUpperCase() + rawDir.substring(1).toLowerCase();
+        direction = rawDir.substring(0, 1).toUpperCase() + rawDir.substring(1).toLowerCase();
     }
 
     /**
