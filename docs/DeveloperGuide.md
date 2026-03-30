@@ -488,6 +488,60 @@ Traders tend to think of their strategies in the order they used them, not alpha
 - **A `filterByStrategy` method on `TradeList`**: This was considered to avoid iterating through all trades in `CompareCommand`. However, it would require multiple passes (one per unique strategy), making it O(n x k) where `k` is the number of strategies. The single-pass accumulation approach is O(n) and simpler.
 - **Storing `StrategyStats` inside `TradeList` as a cached field**: Rejected because it would couple the model to a specific reporting concept and require cache invalidation on every add/edit/delete.
 
+---
+
+#### 2.2.9 Storage Component (Encrypted Persistence)
+
+##### Architecture-Level Description
+
+`Storage` is the sole class responsible for reading and writing trade data to disk. All data is encrypted at rest using **AES-128** symmetric encryption. The encryption key is derived from the user's password via a **SHA-256** hash, with only the first 16 bytes used to form the AES key. No plaintext trade records are ever written to the file.
+
+The file format is:
+
+```
+<SHA-256 password hash (Base64)>
+<AES-encrypted trade line 1 (Base64)>
+<AES-encrypted trade line 2 (Base64)>
+...
+```
+
+The first line is the Base64-encoded SHA-256 hash of the password. This is used on load to verify that the correct password has been provided before any decryption is attempted.
+
+`Storage` has no dependency on `Ui`, `Parser`, or any `Command`. It only depends on `TradeList` and `Trade` from the model layer, keeping coupling minimal.
+
+##### Component-Level Description
+
+| Method | Responsibility |
+|---|---|
+| `setPassword(String)` | Derives the AES key and stores the password hash. Must be called before `saveTrades` or `loadTrades`. |
+| `saveTrades(TradeList)` | Creates parent directories if needed, writes the password hash on line 1, then writes one AES-encrypted, Base64-encoded trade string per line. |
+| `loadTrades()` | Reads line 1 and compares it to `passwordHash`. If it matches, decrypts each subsequent line, parses the 8-field pipe-delimited format, and populates a `TradeList`. |
+| `exists()` | Returns whether the underlying file is present on disk. Used by `ProfileManager` during startup. |
+
+The encryption and decryption use Java's `javax.crypto.Cipher` in `AES/ECB` mode (the default single-block `"AES"` transformation). Each trade's `toStorageString()` output (pipe-delimited) is individually encrypted and Base64-encoded before being written as a line.
+
+##### Sequence Diagram — `saveTrades` on exit
+![Save Trades on exit Sequence Diagram](diagrams/save-trades-on-exit-diagram.png)
+
+##### Sequence Diagram — `loadTrades` on startup
+![Load Trades Diagram](diagrams/load-trades-diagram.png)
+
+##### Design Rationale
+
+**Why derive the key from a password hash rather than storing the key directly?**
+The password hash acts as both the AES key seed and the per-file identity marker (the first line of each profile file). This allows `ProfileManager` to determine which file belongs to which user without storing any plaintext credential.
+
+**Why AES-128 and not AES-256?**
+AES-128 (16-byte key) is sufficient for protecting trade records from casual access. Moving to AES-256 would require only changing the `Arrays.copyOf` length from 16 to 32; the rest of the implementation is unchanged.
+
+**Why encrypt each trade line independently rather than the whole file?**
+Individual-line encryption makes the format robust: a single corrupted line affects only that trade, not the rest of the file. It also maps naturally to the line-by-line read loop in `loadTrades`.
+
+**Alternatives considered:**
+- **Storing plaintext**: Rejected. A trader's position sizes, entry/exit prices, and strategies are commercially sensitive. Plaintext storage would expose this data to anyone with filesystem access.
+- **Storing only a password prompt and trusting the key**: Rejected because without the stored hash on line 1, `ProfileManager` would have no way to distinguish a wrong-password decryption failure from a corrupted file.
+
+---
 
 ## 3. Product Scope
 
