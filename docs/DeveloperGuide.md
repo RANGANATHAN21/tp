@@ -543,6 +543,75 @@ Individual-line encryption makes the format robust: a single corrupted line affe
 
 ---
 
+#### 2.2.10 ProfileManager (Multi-Profile Support)
+
+##### Architecture-Level Description
+
+`ProfileManager` is the startup component that resolves which storage file belongs to the current user. It sits between `TradeLog`'s constructor and the `Storage` class, and is the only class that knows how multiple profile files are named or how to scan them.
+
+The password is **not** passed in from `TradeLog`. Instead, `ProfileManager` reads it interactively from the user via `Ui.readPassword()` at startup, displaying a context-sensitive prompt depending on whether any profile files already exist.
+
+Profile files follow the naming convention:
+
+```
+<baseDir>/<baseName>.txt          ← index 0 (the default)
+<baseDir>/<baseName>_1.txt        ← index 1
+<baseDir>/<baseName>_2.txt        ← index 2
+...
+```
+
+Each file belongs to exactly one password (identified by the SHA-256 hash stored on its first line). `findNextAvailablePath()` determines the path for a new profile by scanning for the first suffix index whose file does not yet exist.
+
+##### Component-Level Description
+
+The constructor `ProfileManager(String baseDir, String baseName, Ui ui)` runs the following logic:
+
+1. **Determine whether any profile files exist** by checking if `<baseDir>/<baseName>.txt` is present on disk.
+2. **Prompt for a password** via `ui.readPassword(prompt)`:
+   - If no files exist: `"No profiles found. Create a new password:"`
+   - If files exist: `"Enter password to load your profile (or create a new one):"`
+3. **Branch on file existence:**
+   - **No files exist** → call `createNewProfile(...)` immediately with message `"No existing profile found. Creating new profile..."` and exit.
+   - **Files exist** → call `tryLoadExistingProfile(...)`:
+     - **Returns `true`** (password matched a file): constructor exits successfully.
+     - **Returns `false`** (no file matched the password): prompt the user `"No profile found for the entered password. Create a new profile? (yes/no):"`.
+       - If the user answers `"yes"`: call `createNewProfile(...)` with message `"Creating new profile..."` and exit.
+       - If the user answers anything else: loop back to step 2 and re-prompt for the password.
+
+After the constructor completes, `getActiveStorage()` and `getLoadedTrades()` pass the result to `TradeLog`.
+
+| Method | Responsibility |
+|---|---|
+| `ProfileManager(String, String, Ui)` | Interactive startup: prompts for password, finds or creates the matching profile. |
+| `tryLoadExistingProfile(String, String, String, Ui)` | Iterates over existing numbered files, attempts `setPassword` + `loadTrades` on each; returns `true` on a hash match. |
+| `createNewProfile(String, String, String, Ui, String)` | Finds the next available file path, initialises a fresh `Storage`, calls `setPassword`, and sets `loadedTrades` to a new empty `TradeList`. |
+| `findNextAvailablePath(String, String)` | Returns the first `<baseDir>/<baseName>_N.txt` path (or `<baseName>.txt` for index 0) that does not yet exist on disk. |
+| `getActiveStorage()` | Returns the `Storage` instance resolved during construction. |
+| `getLoadedTrades()` | Returns the `TradeList` loaded (or newly created) during construction. |
+
+##### Sequence Diagram — startup with an existing matching profile
+![Existing Matching Profile Diagram](diagrams/existing-matching-profile-diagram.png)
+
+##### Sequence Diagram — startup when password does not match, user opts to create new profile
+![Password Mismatch and New Profile Creation Diagram](diagrams/password-mismatch-and-new-profile-creation-diagram.png)
+
+##### Design Rationale
+
+**Why does `ProfileManager` read the password interactively rather than receiving it as a constructor argument?**
+Keeping password acquisition inside `ProfileManager` avoids passing a sensitive credential through `TradeLog`'s constructor. `ProfileManager` owns the full login loop — prompting, validating, and retrying — without exposing that state to its caller.
+
+**Why scan files sequentially rather than encoding the profile index in the file itself?**
+Keeping profile selection implicit (driven purely by password matching) means the user never needs to remember a profile number. The password is the sole credential.
+
+**Why prompt the user before creating a new profile when no match is found?**
+Silently creating a new profile on a password mismatch would produce spurious empty profiles from typographical errors. The `yes/no` confirmation lets the user retry their password instead, preventing unintended profile proliferation.
+
+**Alternatives considered:**
+- **Single file for all users**: Rejected. A single file would require a more complex internal structure to separate users' data and would make per-user password protection harder.
+- **Using a directory per user**: Considered but rejected for simplicity. The sequential suffix convention is easy to implement and requires no directory management.
+
+---
+
 ## 3. Product Scope
 
 ### 3.1 Target User Profile
