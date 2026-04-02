@@ -30,3 +30,26 @@ My contributions focused on **data persistence**, **trade filtering**, **safe tr
 | **Defensiveness** | Added assertions and logging in `FilterCommand` and `ProfileManager` to enforce null checks and document expected state at runtime. |
 | **Testing** | Wrote JUnit tests for `FilterCommand` covering exact and partial matching, no-match cases, and missing filter arguments. Updated `TradeLogTest` to include the password prompt in the input stream. |
 | **Documentation** | Documented the `filter` command in the User Guide with format, flags, examples, and expected output. |
+
+### Diagrams
+
+Added the following UML Diagrams:
+
+- `save-trades-on-exit-diagram`
+- `existing-matching-profile-diagram`
+- `password-mismatch-and-new-profile-creation-diagram`
+- `filtering-trades-diagram`
+
+### Team-based Tasks
+
+- Contributed to the defensiveness of the code. Added most of the assertions for the commands and parser classes
+- Contributed to updating the UG and DG for new functionalities that were added
+- Contributed to JUnit tests for new functionalities and updated pervious tests to work with new changes
+- Ensure teammates used issue tracking to track progress for the new milestone v2.0
+- Further abstracted implementation of methods and features (e.g. abstracted scanner instantiation and closing to Ui class)
+- Further streamlined TradeLog implementation
+
+### Review/mentoring contributions
+
+- Reviewed pull requests
+- Checked implementation of new features for potential bugs
