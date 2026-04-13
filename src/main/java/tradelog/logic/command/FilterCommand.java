@@ -1,7 +1,9 @@
 package tradelog.logic.command;
 
-import java.util.HashMap;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 import tradelog.exception.TradeLogException;
 import tradelog.logic.parser.ArgumentTokeniser;
@@ -27,19 +29,24 @@ public class FilterCommand extends Command {
      * Constructs a FilterCommand by parsing the arguments string.
      *
      * @param arguments The user-provided arguments after "filter".
-     * @throws TradeLogException If no filter values are provided.
+     * @throws TradeLogException If no filter values are provided or validation fails.
      */
     public FilterCommand(String arguments) throws TradeLogException {
         HashMap<String, String> parsedArgs = ArgumentTokeniser.tokenise(arguments, PREFIXES);
 
-        ticker = ParserUtil.parseTicker(parsedArgs.getOrDefault("t/", ""));
-        String rawStrategy = parsedArgs.getOrDefault("strat/", "").trim();
-        strategy = rawStrategy.isEmpty() ? "" : ParserUtil.parseStrategy(rawStrategy);
-        date = parsedArgs.getOrDefault("d/", "").trim();
-        isPartial = Arrays.asList(arguments.split(" ")).contains("-p");
+        // Fix: Only parse ticker if it's explicitly provided and not empty to avoid ParserUtil's empty check
+        String rawTicker = parsedArgs.getOrDefault("t/", "").trim();
+        this.ticker = rawTicker.isEmpty() ? "" : ParserUtil.parseTicker(rawTicker);
 
-        if (ticker.isEmpty() && strategy.isEmpty() && date.isEmpty()) {
-            throw new TradeLogException("Use at least one filter: t/<ticker>, strat/<strategy>, d/<date>");
+        String rawStrategy = parsedArgs.getOrDefault("strat/", "").trim();
+        this.strategy = rawStrategy.isEmpty() ? "" : ParserUtil.parseStrategy(rawStrategy);
+
+        this.date = parsedArgs.getOrDefault("d/", "").trim();
+        this.isPartial = Arrays.asList(arguments.split(" ")).contains("-p");
+
+        // Align message with FilterCommandTest expectations
+        if (this.ticker.isEmpty() && this.strategy.isEmpty() && this.date.isEmpty()) {
+            throw new TradeLogException("At least one filter criteria (t/, strat/, or d/) must be provided.");
         }
     }
 
@@ -48,26 +55,12 @@ public class FilterCommand extends Command {
         assert tradeList != null : "TradeList should not be null";
         assert ui != null : "Ui should not be null";
 
-        java.util.List<Integer> matchingIndices = new java.util.ArrayList<>();
+        List<Integer> matchingIndices = new ArrayList<>();
         TradeList filteredTrades = new TradeList();
 
         for (int i = 0; i < tradeList.size(); i++) {
-            boolean matchesTicker;
-            boolean matchesStrategy;
-            boolean matchesDate;
             Trade trade = tradeList.getTrade(i);
-            if (isPartial) {
-                matchesTicker = ticker.isEmpty() || trade.getTicker().contains(ticker);
-                matchesStrategy = strategy.isEmpty() || 
-                        trade.getStrategy().toLowerCase().contains(strategy.toLowerCase());
-                matchesDate = date.isEmpty() || trade.getDate().contains(date);
-            } else {
-                matchesTicker = ticker.isEmpty() || trade.getTicker().equals(ticker);
-                matchesStrategy = strategy.isEmpty() || trade.getStrategy().equalsIgnoreCase(strategy);
-                matchesDate = date.isEmpty() || trade.getDate().equals(date);
-            }
-
-            if (matchesTicker && matchesStrategy && matchesDate) {
+            if (isMatch(trade)) {
                 matchingIndices.add(i);
                 filteredTrades.addTrade(trade);
             }
@@ -80,5 +73,24 @@ public class FilterCommand extends Command {
             SummaryCommand summaryCommand = new SummaryCommand();
             summaryCommand.execute(filteredTrades, ui, storage);
         }
+    }
+
+    private boolean isMatch(Trade trade) {
+        boolean matchesTicker;
+        boolean matchesStrategy;
+        boolean matchesDate;
+
+        if (isPartial) {
+            matchesTicker = ticker.isEmpty() || trade.getTicker().contains(ticker.toUpperCase());
+            matchesStrategy = strategy.isEmpty() ||
+                    trade.getStrategy().toLowerCase().contains(strategy.toLowerCase());
+            matchesDate = date.isEmpty() || trade.getDate().contains(date);
+        } else {
+            matchesTicker = ticker.isEmpty() || trade.getTicker().equalsIgnoreCase(ticker);
+            matchesStrategy = strategy.isEmpty() || trade.getStrategy().equalsIgnoreCase(strategy);
+            matchesDate = date.isEmpty() || trade.getDate().equals(date);
+        }
+
+        return matchesTicker && matchesStrategy && matchesDate;
     }
 }

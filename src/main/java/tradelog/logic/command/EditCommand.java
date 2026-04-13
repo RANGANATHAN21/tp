@@ -35,9 +35,14 @@ public class EditCommand extends Command {
         if (trimmedArgs.isEmpty()) {
             throw new TradeLogException("Please specify a trade index to edit.");
         }
+
         String[] parts = trimmedArgs.split(" ", 2);
         try {
-            this.targetIndex = Integer.parseInt(parts[0]) - 1;
+            int inputIndex = Integer.parseInt(parts[0]);
+            if (inputIndex <= 0) {
+                throw new TradeLogException("Index must be a positive integer (1, 2, 3...).");
+            }
+            this.targetIndex = inputIndex - 1;
         } catch (NumberFormatException e) {
             throw new TradeLogException("The trade index must be a valid number.");
         }
@@ -84,6 +89,9 @@ public class EditCommand extends Command {
                 ? ParserUtil.parsePrice(parsedArgs.get("x/"), "Exit") : tradeToEdit.getExitPrice();
         double newStop = parsedArgs.containsKey("s/")
                 ? ParserUtil.parsePrice(parsedArgs.get("s/"), "Stop Loss") : tradeToEdit.getStopLossPrice();
+        String newOutcome = parsedArgs.containsKey("o/")
+                ? ParserUtil.parseOutcome(parsedArgs.get("o/"))
+                : tradeToEdit.getOutcome();
         String newStrat = parsedArgs.containsKey("strat/")
                 ? ParserUtil.parseStrategy(parsedArgs.get("strat/"))
                 : tradeToEdit.getStrategy();
@@ -107,6 +115,13 @@ public class EditCommand extends Command {
         tradeToEdit.setExitPrice(newExit);
         tradeToEdit.setStopLossPrice(newStop);
         tradeToEdit.setStrategy(newStrat);
+
+
+        try {
+            storage.saveTrades(tradeList);
+        } catch (Exception e) {
+            ui.showError("Warning: Changes made but failed to save to disk: " + e.getMessage());
+        }
 
         ui.showTradeUpdated(targetIndex + 1);
         ui.printTrade(tradeToEdit);

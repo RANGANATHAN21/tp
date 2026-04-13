@@ -59,7 +59,7 @@ public class ParserUtil {
 
     /**
      * Parses a string representation of a price into a double.
-     * The value must be a positive number.
+     * Validates that the input is a positive numerical value.
      *
      * @param priceString The string representing the price.
      * @param fieldName   The name of the field (e.g., "Entry", "Exit") for error messages.
@@ -110,19 +110,28 @@ public class ParserUtil {
      *
      * @param ticker The raw ticker string.
      * @return The formatted uppercase ticker.
+     * @throws TradeLogException If the ticker is empty.
      */
-    public static String parseTicker(String ticker) {
-        return ticker.trim().toUpperCase();
+    public static String parseTicker(String ticker) throws TradeLogException {
+        String trimmedTicker = ticker.trim();
+        if (trimmedTicker.isEmpty()) {
+            throw new TradeLogException("Ticker cannot be empty.");
+        }
+        return trimmedTicker.toUpperCase();
     }
 
     /**
      * Parses and validates the trade direction.
+     * Validates that the input is not empty and matches 'long' or 'short'.
      *
      * @param direction The raw direction string.
      * @return The formatted direction ("Long" or "Short").
-     * @throws TradeLogException If the direction is not "long" or "short".
+     * @throws TradeLogException If the direction is empty or is not 'long' or 'short'.
      */
     public static String parseDirection(String direction) throws TradeLogException {
+        if (direction == null || direction.trim().isEmpty()) {
+            throw new TradeLogException("Direction cannot be empty (must be 'long' or 'short').");
+        }
         String dir = direction.trim().toLowerCase();
         if (dir.equals("long") || dir.equals("short")) {
             return dir.substring(0, 1).toUpperCase() + dir.substring(1);
@@ -228,5 +237,20 @@ public class ParserUtil {
             throw new TradeLogException(
                     "Invalid Trade: For a Short position, Stop Loss must be above Entry Price.");
         }
+    }
+
+    /**
+     * Parses the trade outcome.
+     * Validates that the outcome is not empty.
+     *
+     * @param outcome The raw outcome string.
+     * @return The trimmed outcome string.
+     * @throws TradeLogException If the outcome is empty.
+     */
+    public static String parseOutcome(String outcome) throws TradeLogException {
+        if (outcome == null || outcome.trim().isEmpty()) {
+            throw new TradeLogException("Outcome cannot be empty.");
+        }
+        return outcome.trim();
     }
 }
