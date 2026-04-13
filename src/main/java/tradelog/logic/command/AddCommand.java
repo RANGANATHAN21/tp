@@ -76,6 +76,10 @@ public class AddCommand extends Command {
         assert addTrade != null : "addTrade object should have been successfully created in constructor";
         int initialSize = tradeList.size();
 
+        if (tradeList.contains(addTrade)) {
+            throw new TradeLogException("Duplicate trade detected. This trade already exists.");
+        }
+
         UndoCommand.saveState(tradeList);
 
         tradeList.addTrade(addTrade);

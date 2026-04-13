@@ -294,4 +294,22 @@ public class Trade {
     public void setStrategy(String strategy) {
         this.strategy = strategy;
     }
+
+    @Override
+    public boolean equals(Object trade) {
+        if (this == trade) {
+            return true;
+        }
+        if (!(trade instanceof Trade other)) {
+            return false;
+        }
+        return ticker.equals(other.ticker)
+                && date.equals(other.date)
+                && direction.equals(other.direction)
+                && Double.compare(entryPrice, other.entryPrice) == 0
+                && Double.compare(exitPrice, other.exitPrice) == 0
+                && Double.compare(stopLossPrice, other.stopLossPrice) == 0
+                && outcome.equals(other.outcome)
+                && strategy.equals(other.strategy);
+    }
 }

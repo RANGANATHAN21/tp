@@ -64,7 +64,7 @@ public class EditCommand extends Command {
         assert storage != null : "storage should not be null when executing edit";
         assert targetIndex >= 0 : "targetIndex should be 0 or greater (0-based)";
 
-        if (targetIndex >= tradeList.size()) {
+        if (targetIndex < 0 || targetIndex >= tradeList.size()) {
             throw new TradeLogException("Trade index out of bounds.");
         }
 

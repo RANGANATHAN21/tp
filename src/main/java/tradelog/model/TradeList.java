@@ -61,4 +61,14 @@ public class TradeList {
     public boolean isEmpty() {
         return trades.isEmpty();
     }
+
+    /**
+     * Returns true if the list already contains an equal trade.
+     *
+     * @param trade The trade to check for.
+     * @return true if a duplicate exists.
+     */
+    public boolean contains(Trade trade) {
+        return trades.contains(trade);
+    }
 }
