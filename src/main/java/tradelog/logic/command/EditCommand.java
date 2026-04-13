@@ -18,7 +18,7 @@ public class EditCommand extends Command {
 
     /** All possible prefixes that can be used for editing. */
     private static final String[] ACCEPTED_PREFIXES = {
-        "t/", "d/", "dir/", "e/", "x/", "s/", "o/", "strat/"
+        "t/", "d/", "dir/", "e/", "x/", "s/", "strat/"
     };
 
     private final int targetIndex;
@@ -80,7 +80,7 @@ public class EditCommand extends Command {
         String newTicker = parsedArgs.containsKey("t/")
                 ? ParserUtil.parseTicker(parsedArgs.get("t/")) : tradeToEdit.getTicker();
         String newDate = parsedArgs.containsKey("d/")
-                ? parsedArgs.get("d/") : tradeToEdit.getDate();
+                ? ParserUtil.parseDate(parsedArgs.get("d/")) : tradeToEdit.getDate();
         String newDir = parsedArgs.containsKey("dir/")
                 ? ParserUtil.parseDirection(parsedArgs.get("dir/")) : tradeToEdit.getDirection();
         double newEntry = parsedArgs.containsKey("e/")
@@ -114,7 +114,6 @@ public class EditCommand extends Command {
         tradeToEdit.setEntryPrice(newEntry);
         tradeToEdit.setExitPrice(newExit);
         tradeToEdit.setStopLossPrice(newStop);
-        tradeToEdit.setOutcome(newOutcome);
         tradeToEdit.setStrategy(newStrat);
 
 

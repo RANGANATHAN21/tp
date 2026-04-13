@@ -36,7 +36,7 @@ class UiTest {
         Ui ui = new Ui();
         TradeList tradeList = new TradeList();
         tradeList.addTrade(new Trade("AAPL", "2026-02-18",
-                "Long", 180.0, 190.0, 170.0, "Win", "Breakout"));
+                "Long", 180.0, 190.0, 170.0, "Breakout"));
         String output = captureOutput(() -> ui.printTradeList(tradeList));
         assertTrue(output.contains("AAPL"));
         assertTrue(output.contains("1."));
@@ -47,9 +47,9 @@ class UiTest {
         Ui ui = new Ui();
         TradeList tradeList = new TradeList();
         tradeList.addTrade(new Trade("AAPL", "2026-02-18",
-                "Long", 180.0, 190.0, 170.0, "Win", "Breakout"));
+                "Long", 180.0, 190.0, 170.0, "Breakout"));
         tradeList.addTrade(new Trade("TSLA", "2026-02-19",
-                "Short", 400.0, 380.0, 410.0, "Win", "Pullback"));
+                "Short", 400.0, 380.0, 410.0, "Pullback"));
 
         String output = captureOutput(() -> ui.printIndexedTrades(tradeList, java.util.List.of(1)));
 
@@ -135,7 +135,7 @@ class UiTest {
     public void printTrade_containsTradeSummary() {
         Ui ui = new Ui();
         Trade trade = new Trade("AAPL", "2026-02-18",
-                "Long", 180.0, 190.0, 170.0, "Win", "Breakout");
+                "Long", 180.0, 190.0, 170.0, "Breakout");
         String output = captureOutput(() -> ui.printTrade(trade));
         assertTrue(output.contains("Trade Summary:"));
         assertTrue(output.contains("AAPL"));

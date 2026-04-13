@@ -22,7 +22,6 @@ public class EditCommandTest {
     private static final double INIT_ENTRY = 150.0;
     private static final double INIT_EXIT = 160.0;
     private static final double INIT_STOP = 140.0;
-    private static final String INIT_OUTCOME = "Open";
     private static final String INIT_STRAT = "Trend";
 
     private TradeList tradeList;
@@ -33,7 +32,7 @@ public class EditCommandTest {
     public void setUp() throws TradeLogException {
         tradeList = new TradeList();
         Trade initialTrade = new Trade(INIT_TICKER, INIT_DATE, INIT_DIR,
-                INIT_ENTRY, INIT_EXIT, INIT_STOP, INIT_OUTCOME, INIT_STRAT);
+                INIT_ENTRY, INIT_EXIT, INIT_STOP, INIT_STRAT);
         tradeList.addTrade(initialTrade);
 
         ui = new Ui();
@@ -43,8 +42,7 @@ public class EditCommandTest {
     }
 
     private void assertTradeUnchanged(int index, String ticker, String date, String dir,
-                                      double entry, double exit, double stop,
-                                      String outcome, String strat) {
+                                      double entry, double exit, double stop, String strat) {
         Trade current = tradeList.getTrade(index);
         assertEquals(ticker, current.getTicker());
         assertEquals(date, current.getDate());
@@ -58,12 +56,11 @@ public class EditCommandTest {
 
     @Test
     public void execute_validEdit_tradeUpdatedSuccessfully() throws TradeLogException {
-        EditCommand command = new EditCommand("1 x/175.0 o/WIN");
+        EditCommand command = new EditCommand("1 x/175.0");
         command.execute(tradeList, ui, storage);
 
         Trade updatedTrade = tradeList.getTrade(0);
         assertEquals(175.0, updatedTrade.getExitPrice());
-        assertEquals("WIN", updatedTrade.getOutcome());
     }
 
     @Test
@@ -76,7 +73,7 @@ public class EditCommandTest {
         command.execute(tradeList, ui, storage);
 
         assertTradeUnchanged(0, INIT_TICKER, INIT_DATE, INIT_DIR, INIT_ENTRY,
-                INIT_EXIT, INIT_STOP, INIT_OUTCOME, INIT_STRAT);
+                INIT_EXIT, INIT_STOP, INIT_STRAT);
 
         assertTradeUnchanged(1, newTicker, "2024-01-01", "Short", 250.0,
                 230.0, 260.0, "WIN", "Swing");
@@ -102,11 +99,22 @@ public class EditCommandTest {
         assertThrows(TradeLogException.class, () -> command.execute(tradeList, ui, storage));
 
         assertTradeUnchanged(0, INIT_TICKER, INIT_DATE, INIT_DIR, INIT_ENTRY,
-                INIT_EXIT, INIT_STOP, INIT_OUTCOME, INIT_STRAT);
+                INIT_EXIT, INIT_STOP, INIT_STRAT);
     }
 
     @Test
-    public void execute_indexOutOfBounds_throwsTradeLogException() throws TradeLogException {
+    public void execute_complexInvalidEdit_fullStateMaintained() {
+        EditCommand command = new EditCommand("1 t/MSFT d/2025-01-01 e/not_a_number");
+
+        assertThrows(TradeLogException.class, () -> command.execute(tradeList, ui, storage));
+
+        // Line wrapped to satisfy Checkstyle 120-char limit
+        assertTradeUnchanged(0, INIT_TICKER, INIT_DATE, INIT_DIR, INIT_ENTRY,
+                INIT_EXIT, INIT_STOP, INIT_STRAT);
+    }
+
+    @Test
+    public void execute_indexOutOfBounds_throwsTradeLogException() {
         EditCommand command = new EditCommand("10 t/MSFT");
         assertThrows(TradeLogException.class, () -> command.execute(tradeList, ui, storage));
     }
