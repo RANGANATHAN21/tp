@@ -89,9 +89,6 @@ public class EditCommand extends Command {
                 ? ParserUtil.parsePrice(parsedArgs.get("x/"), "Exit") : tradeToEdit.getExitPrice();
         double newStop = parsedArgs.containsKey("s/")
                 ? ParserUtil.parsePrice(parsedArgs.get("s/"), "Stop Loss") : tradeToEdit.getStopLossPrice();
-        String newOutcome = parsedArgs.containsKey("o/")
-                ? ParserUtil.parseOutcome(parsedArgs.get("o/"))
-                : tradeToEdit.getOutcome();
         String newStrat = parsedArgs.containsKey("strat/")
                 ? ParserUtil.parseStrategy(parsedArgs.get("strat/"))
                 : tradeToEdit.getStrategy();

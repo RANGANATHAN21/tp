@@ -238,19 +238,4 @@ public class ParserUtil {
                     "Invalid Trade: For a Short position, Stop Loss must be above Entry Price.");
         }
     }
-
-    /**
-     * Parses the trade outcome.
-     * Validates that the outcome is not empty.
-     *
-     * @param outcome The raw outcome string.
-     * @return The trimmed outcome string.
-     * @throws TradeLogException If the outcome is empty.
-     */
-    public static String parseOutcome(String outcome) throws TradeLogException {
-        if (outcome == null || outcome.trim().isEmpty()) {
-            throw new TradeLogException("Outcome cannot be empty.");
-        }
-        return outcome.trim();
-    }
 }
