@@ -114,15 +114,15 @@ public class SummaryCommandTest {
     public void execute_populatedList_calculatesMetricsCorrectly() {
         // Trade 1: A Winning Trade (Expected RR: +2.0)
         Trade winTrade = new Trade("AAPL", "2023-10-10", "long",
-                100.0, 120.0, 90.0, "WIN", "Trend");
+                100.0, 120.0, 90.0, "Trend");
 
         // Trade 2: A Losing Trade (Expected RR: -0.5)
         Trade lossTrade = new Trade("TSLA", "2023-10-11", "long",
-                100.0, 95.0, 90.0, "LOSS", "Breakout");
+                100.0, 95.0, 90.0, "Breakout");
 
         // Trade 3: A Breakeven Trade (Expected RR: 0.0)
         Trade breakevenTrade = new Trade("MSFT", "2023-10-12", "long",
-                100.0, 100.0, 90.0, "BE", "Trend");
+                100.0, 100.0, 90.0, "Trend");
 
         tradeList.addTrade(winTrade);
         tradeList.addTrade(lossTrade);

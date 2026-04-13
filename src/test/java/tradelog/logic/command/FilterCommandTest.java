@@ -50,9 +50,9 @@ public class FilterCommandTest {
     public void execute_filterByTicker_printsExpectedTrade() {
         TradeList tradeList = new TradeList();
         tradeList.addTrade(new Trade("AAPL", "2026-03-01", "Long",
-                100, 110, 95, "Win", "Breakout"));
+                100, 110, 95, "Breakout"));
         tradeList.addTrade(new Trade("MSFT", "2026-03-02", "Short",
-                200, 190, 210, "Win", "Momentum"));
+                200, 190, 210, "Momentum"));
 
         Ui ui = new Ui();
         Storage storage = new Storage("./data/trades.txt");
@@ -74,9 +74,9 @@ public class FilterCommandTest {
     public void execute_filterByStrategy_calculatesCorrectAggregates() {
         TradeList tradeList = new TradeList();
         tradeList.addTrade(new Trade("AAPL", "2026-03-01", "Long",
-                100, 110, 95, "Win", "Breakout"));
+                100, 110, 95, "Breakout"));
         tradeList.addTrade(new Trade("TSLA", "2026-03-03", "Long",
-                100, 90, 95, "Loss", "Breakout"));
+                100, 90, 95, "Breakout"));
 
         Ui ui = new Ui();
         Storage storage = new Storage("./data/trades.txt");
@@ -94,9 +94,9 @@ public class FilterCommandTest {
     public void execute_filterByStrategyShortcut_matchesExpandedStrategy() {
         TradeList tradeList = new TradeList();
         tradeList.addTrade(new Trade("AAPL", "2026-03-01", "Long",
-                100, 110, 95, "Win", "Breakout"));
+                100, 110, 95, "Breakout"));
         tradeList.addTrade(new Trade("TSLA", "2026-03-03", "Long",
-                100, 90, 95, "Loss", "Pullback"));
+                100, 90, 95, "Pullback"));
 
         Ui ui = new Ui();
         Storage storage = new Storage("./data/trades.txt");
@@ -113,7 +113,7 @@ public class FilterCommandTest {
     public void execute_filterNoMatch_showsNoMatchMessage() {
         TradeList tradeList = new TradeList();
         tradeList.addTrade(new Trade("AAPL", "2026-03-01", "Long",
-                100, 110, 95, "Win", "Breakout"));
+                100, 110, 95, "Breakout"));
 
         Ui ui = new Ui();
         Storage storage = new Storage("./data/trades.txt");
@@ -128,9 +128,9 @@ public class FilterCommandTest {
     public void execute_filterByPartialTicker_printsExpectedTrade() {
         TradeList tradeList = new TradeList();
         tradeList.addTrade(new Trade("AAPL", "2026-03-01", "Long",
-                100, 110, 95, "Win", "Breakout"));
+                100, 110, 95, "Breakout"));
         tradeList.addTrade(new Trade("MSFT", "2026-03-02", "Short",
-                200, 190, 210, "Win", "Momentum"));
+                200, 190, 210, "Momentum"));
 
         Ui ui = new Ui();
         Storage storage = new Storage("./data/trades.txt");

@@ -56,11 +56,11 @@ public class CompareCommandTest {
     @Test
     public void execute_populatedList_groupsTradesByStrategy() {
         tradeList.addTrade(new Trade("AAPL", "2026-03-01", "Long",
-                100, 120, 90, "Win", "Breakout"));
+                100, 120, 90, "Breakout"));
         tradeList.addTrade(new Trade("TSLA", "2026-03-02", "Long",
-                100, 95, 90, "Loss", "Breakout"));
+                100, 95, 90, "Breakout"));
         tradeList.addTrade(new Trade("MSFT", "2026-03-03", "Long",
-                100, 115, 90, "Win", "Pullback"));
+                100, 115, 90, "Pullback"));
 
         CompareCommand command = new CompareCommand();
         command.execute(tradeList, mockUi, dummyStorage);
@@ -85,11 +85,11 @@ public class CompareCommandTest {
     @Test
     public void execute_caseVariantKnownStrategy_groupsTradesUnderCanonicalName() {
         tradeList.addTrade(new Trade("AAPL", "2026-03-01", "Long",
-                100, 120, 90, "Win", "Breakout"));
+                100, 120, 90, "Breakout"));
         tradeList.addTrade(new Trade("TSLA", "2026-03-02", "Long",
-                100, 95, 90, "Loss", "breakout"));
+                100, 95, 90, "breakout"));
         tradeList.addTrade(new Trade("MSFT", "2026-03-03", "Long",
-                100, 115, 90, "Win", "BB"));
+                100, 115, 90, "BB"));
 
         CompareCommand command = new CompareCommand();
         command.execute(tradeList, mockUi, dummyStorage);

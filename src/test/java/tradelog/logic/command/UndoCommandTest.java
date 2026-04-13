@@ -24,7 +24,7 @@ public class UndoCommandTest {
         Storage storage = null; // not needed for this test
 
         Trade trade = new Trade("AAPL", "2026-03-31", "long",
-                180, 190, 170, "win", "Breakout");
+                180, 190, 170, "Breakout");
 
         // Save initial state (empty)
         UndoCommand.saveState(tradeList);
@@ -49,7 +49,7 @@ public class UndoCommandTest {
         Storage storage = null;
 
         Trade trade = new Trade("TSLA", "2026-03-31", "long",
-                250, 260, 240, "win", "Pullback");
+                250, 260, 240, "Pullback");
 
         tradeList.addTrade(trade);
 
@@ -90,7 +90,7 @@ public class UndoCommandTest {
         Storage storage = null;
 
         Trade trade = new Trade("NVDA", "2026-03-31", "long",
-                900, 920, 880, "win", "Breakout");
+                900, 920, 880, "Breakout");
 
         UndoCommand.saveState(tradeList);
         tradeList.addTrade(trade);

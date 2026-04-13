@@ -37,7 +37,7 @@ class ListCommandTest {
     public void execute_nonEmptyTradeList_showsTrades() {
         TradeList tradeList = new TradeList();
         tradeList.addTrade(new Trade("AAPL", "2026-02-18",
-                "Long", 180.0, 190.0, 170.0, "Win", "Breakout"));
+                "Long", 180.0, 190.0, 170.0, "Breakout"));
         Ui ui = new Ui();
         Storage storage = new Storage("./data/trades.txt");
         ListCommand command = new ListCommand();
@@ -50,9 +50,9 @@ class ListCommandTest {
     public void execute_multipleTradeList_showsAllTrades() {
         TradeList tradeList = new TradeList();
         tradeList.addTrade(new Trade("AAPL", "2026-02-18",
-                "Long", 180.0, 190.0, 170.0, "Win", "Breakout"));
+                "Long", 180.0, 190.0, 170.0, "Breakout"));
         tradeList.addTrade(new Trade("TSLA", "2026-02-17",
-                "Short", 400.0, 380.0, 410.0, "Win", "Pullback"));
+                "Short", 400.0, 380.0, 410.0, "Pullback"));
         Ui ui = new Ui();
         Storage storage = new Storage("./data/trades.txt");
         ListCommand command = new ListCommand();
