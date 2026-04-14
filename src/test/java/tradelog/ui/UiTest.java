@@ -174,7 +174,7 @@ class UiTest {
         assertTrue(output.contains("EV: +0.500R"));
     }
 
-@Test
+    @Test
     public void showSummary_negativeValues_formatsWithSingleMinusSign() {
         Ui ui = new Ui();
 

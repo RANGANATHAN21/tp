@@ -106,7 +106,7 @@ public class CompareCommandTest {
         assertEquals(66.667, breakoutStats.getWinRate(), 0.001);
     }
 
-// Added ModeManager Assertions
+    // Added ModeManager Assertions
 
     /**
      * Verifies that CompareCommand works correctly regardless of whether LIVE mode is active,
