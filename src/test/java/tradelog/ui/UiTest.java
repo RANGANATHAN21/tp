@@ -77,8 +77,9 @@ class UiTest {
     public void showWelcome_containsCommandList() {
         Ui ui = new Ui();
         String output = captureOutput(ui::showWelcome);
+        // Update mode
         assertTrue(output.contains(
-                "Commands: add, list, edit, delete, filter, compare, summary, encrypt, undo, exit"));
+                "Commands: add, list, edit, delete, filter, compare, summary, encrypt, undo, mode, exit"));
     }
 
     @Test
