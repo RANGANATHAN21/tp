@@ -1,6 +1,6 @@
 # Cydric - Project Portfolio Page
 
-## Overview
+## Overview of Project TradeLog
 
 TradeLog is a Command Line Interface (CLI) application designed for proprietary financial traders who rely heavily on mathematical data to refine their trading systems. It provides a fast, keyboard-centric way to systematically log trades, replacing slow and error-prone spreadsheet entry. The application automatically calculates critical trading metrics such as Risk:Reward (R) ratios, Win Rates, and Expected Value (EV), allowing traders to identify their mathematical edge with precision. TradeLog is built in Java and features an immediate-save, localized file architecture to ensure no data is lost during high-stress trading sessions.
 
@@ -8,15 +8,15 @@ TradeLog is a Command Line Interface (CLI) application designed for proprietary 
 
 **Code Contributed:** [Cydriccwx Team Contributions](https://nus-cs2113-ay2526-s2.github.io/tp-dashboard/?search=cydriccwx&breakdown=true&sort=groupTitle%20dsc&sortWithin=title&since=2026-02-20T00%3A00%3A00&timeframe=commit&mergegroup=&groupSelect=groupByRepos&checkedFileTypes=docs~functional-code~test-code~other&filteredFileName=)
 
-### Enchancements Implemented to TradeLog
-| Category                      | Contribution Details                                                                                                                                                                                                                                                                                                             |
-|:------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Application Architecture**  | Established the foundational project structure by creating and organising all core packages (`tradelog.logic`, `tradelog.model`, `tradelog.storage`, `tradelog.ui`, `tradelog.exception`).                                                                                                                                       |
-| **Core Domain Models**        | Designed and built the central `Trade` entity, encapsulating all trade data (ticker, entry, exit, stop loss, strategy). Implemented essential trading logic within the class, including automated Risk:Reward ratio calculations and storage string formatting.                                                                  |
-| **Command Logic**             | Implemented core execution features including `AddCommand` for safely storing added trades, `SummaryCommand` for iterating through the logged trades to compute advanced statistics (Win Rate, Average Win/Loss, Expected Value, Total R), and `ExitCommand` for clean application termination.                                  |
-| **Parser & Validation**       | Implemented the entire `Parser` component from scratch. Implemented `ArgumentTokeniser` to dynamically extract user prefixes. Implemented **`Parser`** for command routing and **`ParserUtil`** for reusable data parsing and validation helpers (price parsing, ticker formatting, direction validation, stop loss validation). |
-| **Defensiveness**             | Added exception handling across `AddCommand` and `SummaryCommand`.                                                                                                                                                                                                                                                               |
-| **Standards & QA**            | Followed the team's coding standards across all owned files, and wrote JUnit tests for `AddCommandTest`, `ParserTest`, `ArgumentTokeniserTest`, `SummaryCommandTest`, `ListCommandTest`, `DeleteCommandTest`, `CommandTest`, `TradeTest` and `TradeListTest`.                                                                      |
+### Features Implemented to TradeLog
+
+1. **Core Domain Models:** Designed and built the central `Trade` entity, encapsulating all trade data (ticker, entry, exit, stop loss, strategy). Implemented essential trading logic within the class, including automated Risk:Reward ratio calculations and storage string formatting.                                                                  
+
+2. **Command Logic:** Implemented core execution features including `AddCommand` for safely storing added trades, `SummaryCommand` for iterating through the logged trades to compute advanced statistics (Win Rate, Average Win/Loss, Expected Value, Total R), and `ExitCommand` for clean application termination.                                  
+
+3. **Parser & Validation:** Implemented the entire `Parser` component from scratch. Implemented `ArgumentTokeniser` to dynamically extract user prefixes. Implemented **`Parser`** for command routing and **`ParserUtil`** for reusable data parsing and validation helpers (price parsing, ticker formatting, direction validation, stop loss validation).
+
+4. **Defensiveness:** Added extensive exception handling across `AddCommand` and `SummaryCommand` in the `ParserUtil` class.
 
 ### Contributions to the UG
 
@@ -32,7 +32,7 @@ TradeLog is a Command Line Interface (CLI) application designed for proprietary 
 
 ### Contributions to Team-Based Tasks:
 
-1. Set up the foundation of the project structure, including the creation of all core packages and classes.
+1. **Application Architecture:** Set up the foundation of the project structure, including the creation of all core packages and classes (`tradelog.logic`, `tradelog.model`, `tradelog.storage`, `tradelog.ui`, `tradelog.exception`).
 
 2. Maintained code quality standards across the codebase and wrote comprehensive JUnit tests for `AddCommandTest`, `ParserTest`, `ArgumentTokeniserTest`, `SummaryCommandTest`, `ListCommandTest`, `DeleteCommandTest`, `CommandTest`, `TradeTest` and `TradeListTest`.
 
