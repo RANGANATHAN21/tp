@@ -20,7 +20,7 @@ public class AddCommand extends Command {
 
     /** The required prefixes for the add command. */
     public static final String[] REQUIRED_PREFIXES = {
-            "t/", "d/", "dir/", "e/", "x/", "s/", "strat/"};
+        "t/", "d/", "dir/", "e/", "x/", "s/", "strat/"};
 
     private final Trade addTrade;
 
