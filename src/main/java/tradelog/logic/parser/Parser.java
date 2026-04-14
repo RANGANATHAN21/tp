@@ -41,7 +41,7 @@ public class Parser {
             case "summary" -> new SummaryCommand();
             case "encrypt" -> new EncryptCommand(arguments);
             case "undo" -> new UndoCommand();
-            case "mode" -> new SetModeCommand(arguments); // New case added
+            case "mode" -> new SetModeCommand(arguments);
             case "exit" -> new ExitCommand();
             default -> throw new TradeLogException(
                     "Unknown command: '" + commandWord + "'. Please try again.");
