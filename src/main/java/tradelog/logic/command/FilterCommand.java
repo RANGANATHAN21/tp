@@ -1,98 +1,61 @@
 package tradelog.logic.command;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import tradelog.logic.parser.ArgumentTokeniser;
-import tradelog.model.ModeManager;
+import tradelog.exception.TradeLogException;
+import tradelog.logic.parser.ParserUtil;
 import tradelog.model.Trade;
 import tradelog.model.TradeList;
 import tradelog.storage.Storage;
 import tradelog.ui.Ui;
 
-/**
- * Represents a command to filter and display trades based on specific criteria.
- */
+import java.util.ArrayList;
+import java.util.List;
+
 public class FilterCommand extends Command {
+    private final String criteria;
 
-    private static final String[] ACCEPTED_PREFIXES = {"t/", "dir/", "strat/"};
-    private static final Logger logger = Logger.getLogger(FilterCommand.class.getName());
-    private final Map<String, String> filterArgs;
+    public FilterCommand(String args) throws TradeLogException {
+        if (args == null || args.trim().isEmpty()) {
+            throw new TradeLogException("Filter criteria cannot be empty! Use 'filter TICKER' or 'filter s/STRATEGY'.");
+        }
+        this.criteria = args.trim();
 
-    /**
-     * Constructs a FilterCommand by tokenising the user arguments.
-     *
-     * @param arguments The raw string containing filter prefixes.
-     */
-    public FilterCommand(String arguments) {
-        assert arguments != null : "Arguments should not be null";
-        this.filterArgs = ArgumentTokeniser.tokenise(arguments, ACCEPTED_PREFIXES);
+        // verify strategy if there is any
+        if (criteria.startsWith("s/")) {
+            String strategy = criteria.substring(2).trim();
+            if (strategy.isEmpty() || !ParserUtil.getStrategyShortcuts().containsValue(strategy)
+                    && !ParserUtil.getStrategyShortcuts().containsKey(strategy)) {
+                throw new TradeLogException("Invalid strategy: " + strategy);
+            }
+        }
     }
 
-    /**
-     * Executes the filter command.
-     *
-     * @param tradeList The current list of trades.
-     * @param ui        The UI handler for output.
-     * @param storage   The storage handler for persistence.
-     */
     @Override
-    public void execute(TradeList tradeList, Ui ui, Storage storage) {
-        assert tradeList != null : "TradeList should not be null when executing filter";
-        assert ui != null : "Ui should not be null when executing filter";
-
-        if (tradeList.isEmpty()) {
-            ui.showSummaryEmpty();
-            return;
-        }
-
+    public void execute(TradeList trades, Ui ui, Storage storage) {
         List<Integer> matchedIndices = new ArrayList<>();
-        for (int i = 0; i < tradeList.size(); i++) {
-            Trade trade = tradeList.getTrade(i);
-            assert trade != null : "Trade at index " + i + " should not be null";
+        String searchKey = criteria.startsWith("s/") ? criteria.substring(2).trim() : criteria;
+        boolean isStrategySearch = criteria.startsWith("s/");
 
-            if (isMatch(trade)) {
-                matchedIndices.add(i);
+        // e.g. BB -> Breakout
+        String finalSearchKey = isStrategySearch ?
+                ParserUtil.getStrategyShortcuts().getOrDefault(searchKey.toUpperCase(), searchKey) : searchKey;
+
+        for (int i = 0; i < trades.size(); i++) {
+            Trade t = trades.getTrade(i);
+            if (isStrategySearch) {
+                if (t.getStrategy().equalsIgnoreCase(finalSearchKey)) {
+                    matchedIndices.add(i);
+                }
+            } else {
+                if (t.getTicker().toUpperCase().contains(finalSearchKey.toUpperCase())) {
+                    matchedIndices.add(i);
+                }
             }
         }
 
-        // obtain ModeManager instance
-        ModeManager modeManager = ModeManager.getInstance();
-
-        assert modeManager != null : "ModeManager should be initialized before checking isLive";
-
         if (matchedIndices.isEmpty()) {
-            ui.showMessage("No trades found matching the criteria.");
-            return;
+            ui.showMessage("No trades found matching: " + criteria);
+        } else {
+            ui.printIndexedTrades(trades, matchedIndices);
         }
-
-        // give instruction only in LIVE mode
-        if (modeManager.isLive()) {
-            ui.showMessage("[LIVE Mode Active] Note: Historical trades below are read-only.");
-        }
-
-        logger.log(Level.INFO, "Filter results found: {0} trades", matchedIndices.size());
-
-        // invoke original print method
-        ui.printIndexedTrades(tradeList, matchedIndices);
-    }
-
-    private boolean isMatch(Trade trade) {
-        if (filterArgs.containsKey("t/") &&
-                !trade.getTicker().equalsIgnoreCase(filterArgs.get("t/").trim())) {
-            return false;
-        }
-        if (filterArgs.containsKey("dir/") &&
-                !trade.getDirection().equalsIgnoreCase(filterArgs.get("dir/").trim())) {
-            return false;
-        }
-        if (filterArgs.containsKey("strat/") &&
-                !trade.getStrategy().equalsIgnoreCase(filterArgs.get("strat/").trim())) {
-            return false;
-        }
-        return true;
     }
 }
