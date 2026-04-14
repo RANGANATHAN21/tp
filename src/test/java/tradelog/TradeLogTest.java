@@ -24,7 +24,7 @@ class TradeLogTest {
     Path tempDir;
 
     /**
-     * Captures System.out output during the execution of a task.
+     * Captures System. Out output during the execution of a task.
      */
     private String captureOutput(Runnable action) {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
