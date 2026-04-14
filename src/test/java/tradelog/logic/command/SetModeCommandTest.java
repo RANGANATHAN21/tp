@@ -57,17 +57,25 @@ public class SetModeCommandTest {
 
     @Test
     public void execute_validBacktestMode_updatesToBacktest() {
-        // Prepare: Start in LIVE mode
+        // Step 1: Force state to LIVE first so we have something to switch FROM
         ModeManager.getInstance().setMode(ModeManager.EnvironmentMode.LIVE);
+        assertTrue(ModeManager.getInstance().isLive(), "Setup: Should be in LIVE mode first");
 
+        // Step 2: Provide "yes" for the confirmation prompt
         provideInput("yes\n");
+
+        // Step 3: Execute the command to switch to backtest
         SetModeCommand command = new SetModeCommand("backtest");
         command.execute(tradeList, ui, storage);
 
+        // Step 4: Verify the state changed to false
         assertFalse(ModeManager.getInstance().isLive(), "Mode should be BACKTEST (not live) after transition");
         assertEquals(ModeManager.EnvironmentMode.BACKTEST, ModeManager.getInstance().getCurrentMode());
+
+        // Step 5: Reset System.in
         System.setIn(systemIn);
     }
+
 
     /**
      * Verifies that an invalid mode string does not crash the constructor.

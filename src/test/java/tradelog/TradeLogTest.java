@@ -105,33 +105,24 @@ class TradeLogTest {
      * Verifies that the system can transition to LIVE mode via the command loop
      * and displays the appropriate environment warning.
      */
-    /**
-     * Verifies that the system can transition to LIVE mode via the command loop
-     * and displays the appropriate environment warning.
-     */
     @Test
     public void run_setModeCommand_showsModeTransition() {
-        // Sequence:
-        // 1. Enter password: "testpassword"
-        // 2. Enter command: "mode live" (NOT "setmode live")
-        // 3. Confirm transition: "yes" (Required by your SetModeCommand.execute logic)
-        // 4. Exit: "exit"
+        // Sequence: password -> mode command -> confirmation -> exit
         String modeInput = "testpassword\nmode live\nyes\nexit\n";
         System.setIn(new ByteArrayInputStream(modeInput.getBytes()));
 
         String output = captureOutput(() -> new TradeLog(tempDir.toString(), "trades").run());
 
-        // Convert to uppercase for robust keyword checking
         String upperOutput = output.toUpperCase();
-
-        // Verify transition confirmation
         assertTrue(upperOutput.contains("LIVE") && upperOutput.contains("MODE"),
                 "Output should confirm switching to LIVE mode.");
 
-        // Verify that the UI blocks/warnings were shown
-        // Since your code uses boxed blocks for warnings, these keywords must appear
-        assertTrue(upperOutput.contains("LOSS") || upperOutput.contains("LIMIT") || upperOutput.contains("WARNING") || upperOutput.contains("SUCCESS"),
-                "Output should display LIVE mode environment warnings or success messages.");
+        // Fixed: Wrapped long line to stay under 120 characters
+        String errorMessage = "Output should display LIVE mode environment warnings "
+                + "or success messages.";
+        assertTrue(upperOutput.contains("LOSS") || upperOutput.contains("LIMIT")
+                        || upperOutput.contains("WARNING") || upperOutput.contains("SUCCESS"),
+                errorMessage);
     }
 
     /**
