@@ -36,6 +36,8 @@ TradeLog is a Command Line Interface (CLI) application designed for proprietary 
 
 2. Maintained code quality standards across the codebase and wrote comprehensive JUnit tests for `AddCommandTest`, `ParserTest`, `ArgumentTokeniserTest`, `SummaryCommandTest`, `ListCommandTest`, `DeleteCommandTest`, `CommandTest`, `TradeTest` and `TradeListTest`.
 
+3. Took part in final bug-fix and final adjustments to the final version of the app.
+
 ### Review/Mentoring Contributions:
 
 1. Reviewed and approved PRs for teammates contributions. Also, provided feedback when needed.
@@ -77,143 +79,30 @@ Risk:Reward: +1.50R
 Trade successfully added
 ```
 
-#### 5.2 Listing all Trades: `list`
-Displays a numbered list of all trades currently stored in your TradeLog. This is useful for reviewing your recent activity and finding the `INDEX` number of a trade you want to edit or delete.
-
-**Format:** `list`
-
-**Expected Output:**
-
-```text
-Here are your logged trades:
-1. AAPL | 2026-03-18 | Long | E:150 | TP:165 | SL:140 | win | Breakout
-1. TSLA | 2026-03-18 | Long | E:150 | TP:165 | SL:140 | win | Breakout
-```
-
-#### 5.3 Editing a Trade: `edit`
-Updates specific details of a previously logged trade. You must provide the `INDEX` of the trade (which you can find using the `list` command) followed by only the prefixes you wish to change.
-
-**Format**: `edit INDEX [PREFIX/VALUE]...`
-
-**Example:**
-You accidentally logged the TSLA exit price as 210, but it was actually 205. You also want to change the stop loss price.
-edit 2 x/205 s/205
-
-**Expected Output:**
-
-```text
-Trade 2 updated successfully.
---------------------------------------------------------------------------------
-Trade Summary:
-Ticker: TSLA
-Date: 2026-03-19
-Direction: Short
-Entry: 200.0
-Exit: 205.0
-Stop: 205.0
-Strategy: Trend
-
-Risk:Reward: -1.00R
---------------------------------------------------------------------------------
-```
-
-#### 5.4 Deleting a Trade: `delete`
-Permanently removes a trade from your log using its `INDEX` number. Use this to clean up accidental duplicate entries or test data.
-
-**Format**: `delete INDEX`
-
-**Example:**
-`delete 2`
-
-**Expected Output:**
-
-```text
-Trade deleted successfully:
-TSLA | 2026-03-19 | Short | Entry: 200.0 | Exit: 205.0 | -0.50R | BE
-```
-
-#### 5.5 Viewing Performance Metrics: `summary`
-Analyzes your entire `TradeList` and calculates key mathematical metrics to help you understand the performance and edge of your trading system.
-
-**Format**: `summary`
-
-**Expected Output:**
-
-```text
---------------------------------------------------------------------------------
-Overall Performance:
-
-Total Trades: 3
-Win Rate: 100%
-Average Win: 3.83R
-Average Loss: 0.00R
-Overall EV: +3.83R
-Total R: +11.50R
---------------------------------------------------------------------------------
-```
-
-### 5.6 Exiting the Program: `exit`
-Safely saves your data to the local text file and shuts down TradeLog.
-
-**Format**: `exit`
-
 ---
 
 ### Contributions to the Developer Guide (Extracts)
-The following is an extract from my section in the Developer Guide explaining the parsing architecture I designed.
+The following is an extract from my section in the Developer Guide explaining the AddCommand architecture I designed.
 
-#### 2.2.2 Parser Component
+### 2.7 AddCommand
 
 ##### Architecture-Level Description
 
-The parsing architecture is responsible for translating raw user input from the CLI into executable `Command` objects. To maintain separation of concerns and ensure financial data integrity, this logic is decoupled into three distinct utility classes: `Parser` (the command router), `ArgumentTokeniser` (the string extractor), and `ParserUtil` (the domain validator).
+The `AddCommand` is a core state-changing operation responsible for introducing new trades into the TradeLog system. It acts as the primary bridge between the `Parser` component (which supplies the raw user input), the `Model` component (by instantiating new `Trade` objects and updating the in-memory `TradeList`), and the `Ui` component (by showing the resulting trade summary and confirmation message).
 
-It takes the raw string, identifies the user's intent, extracts the variable data, enforces strict mathematical trading rules, and ultimately outputs a safe, validated command ready for execution.
+To adhere to the principle of Separation of Concerns, the execution of the `add` feature is explicitly split into two distinct phases: an initialization/validation phase, and an execution/mutation phase.
 
 ##### Component-Level Description
 
-```
-«utility»
-Parser
-  |
-  |-- parseCommand(userInput)
-        |
-        |-- routes to specific Command constructor
-        \-- throws TradeLogException on unknown command
+1. Construction & Validation Phase: When the user inputs an `add` command, the `Parser` creates a new `AddCommand(String arguments)`. The constructor immediately passes the raw string to the `ArgumentTokeniser` to map prefixes to their respective string values. It then utilizes `ParserUtil` to strictly validate the financial logic of the inputs (e.g., ensuring a `long` position does not have a stop-loss higher than the entry price, and checking that all prices are valid positive numbers). If any validation fails during this step, a `TradeLogException` is thrown before the `TradeList` or `Storage` is ever accessed.
 
-«utility»
-ArgumentTokeniser
-  |
-  \-- tokenise(userInput, prefixes)
-        |
-        \-- returns HashMap<String, String> of prefix-value pairs
+2. Execution Phase: Once the `AddCommand` is successfully instantiated with a fully valid `Trade` object held in its internal state, the main loop calls `execute(tradeList, ui, storage)`. The command appends the new trade to the `TradeList` and triggers the `Ui` to display a confirmation message with the formatted trade details. Persistence is handled separately by the application's shutdown flow.
 
-«utility»
-ParserUtil
-  |
-  |-- parsePrice(priceString, fieldName)
-  |-- parseTicker(ticker)
-  |-- parseDirection(direction)
-  |-- parseStrategy(strategy)
-  |-- validatePrices(entryPrice, stopLossPrice)
-  \-- validateStopLoss(direction, entryPrice, stopLossPrice)
-```
+##### Sequence Diagram — Full `add` execution path
 
-The general parsing sequence for a complex command follows these steps:
-
-1. `Parser` intercepts the raw string, splitting it into a `commandWord` and an `arguments` string.
-
-2. A `switch` expression routes the `arguments` string to the corresponding `Command` constructor (e.g., `AddCommand`).
-
-3. The command constructor delegates the `arguments` string to `ArgumentTokeniser`, which extracts a map of prefix-value pairs (e.g., `t/` -> `AAPL`).
-
-4. The command extracts the mapped values and passes them to `ParserUtil` to enforce type safety (e.g., converting a string to a `double`) and trading logic (e.g., verifying stop-loss validity).
-
-5. Once fully validated, the fully instantiated `Command` object is returned to the logic manager.
-
+![AddCommand sequence diagram](diagrams/add-command-sequence.png)
 
 ##### Design Rationale
 
-**Centralisation of Validation:** An alternative considered was placing validation logic directly inside the respective `Command` classes (e.g., hardcoding the stop-loss verification inside `AddCommand`). This was rejected because it would lead to heavy code duplication across other commands that mutate trade states, such as `EditCommand`. Centralising this in `ParserUtil` keeps the commands as thin orchestrators and ensures mathematical trading rules are uniformly applied.
+The alternative considered having the constructor simply store the raw user string, pushing all tokenizing and validation inside `execute()`. This was rejected because it violates the Single Responsibility Principle. It would bloat the `execute()` method with string manipulation, financial logic validation, memory updates, and UI updates all at once, making unit testing significantly more difficult.
 
-**Tokenisation Data Structure:** `ArgumentTokeniser` returns a `HashMap<String, String>` rather than a `List` of pairs. This was chosen to provide O(1) lookup time when commands need to retrieve their required parameters by prefix key, improving code readability and performance during high-speed data entry.
