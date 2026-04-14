@@ -64,13 +64,19 @@ public class SetModeCommandTest {
         // Step 2: Provide "yes" for the confirmation prompt
         provideInput("yes\n");
 
+        // IMPORTANT: Re-initialize UI after providing input to ensure the
+        // Scanner inside Ui points to the current ByteArrayInputStream
+        Ui testUi = new Ui();
+
         // Step 3: Execute the command to switch to backtest
         SetModeCommand command = new SetModeCommand("backtest");
-        command.execute(tradeList, ui, storage);
+        command.execute(tradeList, testUi, storage);
 
-        // Step 4: Verify the state changed to false
-        assertFalse(ModeManager.getInstance().isLive(), "Mode should be BACKTEST (not live) after transition");
-        assertEquals(ModeManager.EnvironmentMode.BACKTEST, ModeManager.getInstance().getCurrentMode());
+        // Step 4: Verify the state changed to false (Backtest)
+        assertFalse(ModeManager.getInstance().isLive(),
+                "Mode should be BACKTEST (not live) after transition");
+        assertEquals(ModeManager.EnvironmentMode.BACKTEST,
+                ModeManager.getInstance().getCurrentMode());
 
         // Step 5: Reset System.in
         System.setIn(systemIn);
