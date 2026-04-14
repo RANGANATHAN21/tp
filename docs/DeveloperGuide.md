@@ -668,6 +668,80 @@ Silently creating a new profile on a password mismatch would produce spurious em
 - **Single file for all users**: Rejected. A single file would require a more complex internal structure to separate users' data and would make per-user password protection harder.
 - **Using a directory per user**: Considered but rejected for simplicity. The sequential suffix convention is easy to implement and requires no directory management.
 
+### 2.17 ModeManager (Environment Mode Control)
+
+##### Architecture-Level Description
+
+`ModeManager` is a singleton component that maintains the application's global operational state: `BACKTEST` or `LIVE`. It acts as a central "truth source" for other modules (such as `Logic` and `Model`) to determine if specific environment constraints—like daily loss limits or trade date validation—should be active.
+
+As a structural anchor, it ensures that the environment state is unified across the system. The use of a Singleton pattern prevents "split-brain" scenarios where different components might otherwise operate under conflicting environmental rules.
+
+##### Component-Level Description
+
+`ModeManager` provides a thread-safe global access point to the `EnvironmentMode`. It encapsulates the logic for generating warning messages and state transitions.
+
+| Method                     | Responsibility                                                            |
+|----------------------------|---------------------------------------------------------------------------|
+| `getInstance()`            | Returns the thread-safe singleton instance of `ModeManager`.              |
+| `getCurrentMode()`         | Returns the current active `EnvironmentMode` (BACKTEST or LIVE).          |
+| `setMode(EnvironmentMode)` | Updates the application's global state to the specified mode.             |
+| `getWarningMessage()`      | Generates detailed risk warnings based on the target mode's restrictions. |
+
+##### Class Diagram — ModeManager Structure
+
+The following diagram illustrates the Singleton structure of `ModeManager` and its relationship with the `EnvironmentMode` enumeration.
+
+![ModeManager Class Diagram](diagrams/modemanager-class-diagram.png)
+
+##### Design Rationale
+
+**Why use a Singleton for `ModeManager`?**
+Environment state must be unique. If multiple instances existed, different parts of the system (e.g., Validation and Storage) could disagree on whether the system is "Live," leading to critical data integrity issues.
+
+---
+
+### 2.18 SetModeCommand (Interactive Mode Transition)
+
+##### Architecture-Level Description
+
+`SetModeCommand` handles the `mode` command using a **two-phase interactive flow**. Unlike standard commands, it halts execution to wait for user confirmation. It serves as the primary bridge between the user's intent, the `Ui`'s visual partitioning, and `ModeManager`'s state.
+
+This command utilizes specialized `Ui` methods to ensure that risk warnings are boxed within dividers, maintaining a clear distinction between a "proposed" change and a "confirmed" one.
+
+##### Component-Level Description
+
+The `execute(TradeList, Ui, Storage)` method implements a conditional branching logic based on the user's response to a risk warning:
+
+1.  **Preparation**: Fetches the current mode and validates the target.
+2.  **Phase 1 (Prompt)**: Triggers `ui.showModePromptBlock()`, which internally calls `ModeManager` for the warning details.
+3.  **User Interception**: The command calls `ui.readCommand()` and waits for the user's input string.
+4.  **State Resolution (Alt Branch)**:
+    - If the response equals `"yes"`, `ModeManager.setMode()` is called and a success message is displayed.
+    - Otherwise, the state change is skipped, and an abort message is displayed.
+5.  **Control Flow**: Every method call (including `void` methods) returns control to the command to proceed to the next step or termination.
+
+| Method                             | Responsibility                                                                                          |
+|------------------------------------|---------------------------------------------------------------------------------------------------------|
+| `execute(tradeList, ui, storage)`  | Orchestrates the two-phase switch: validates, prompts, reads input, and updates the mode conditionally. |
+| `SetModeCommand(String)`           | Constructor that parses the raw input string into the target `EnvironmentMode`.                         |
+
+##### Sequence Diagram — Mode Transition Logic
+
+The following diagram captures the complete synchronous flow of a mode switch, highlighting the conditional branch (`alt`) based on the user's confirmation.
+
+![Mode Transition Logic Diagram](diagrams/mode-transition-diagram.png)
+
+##### Design Rationale
+
+**Why is the mode switch interactive?**
+`LIVE` mode introduces strict financial discipline (e.g., irreversible loss limit checks). An interactive `"yes"` confirmation ensures the user has visually engaged with the rules before the system lock-in occurs.
+
+**Why use high-level UI methods like `showModePromptBlock`?**
+This maintains the **Logic-UI separation**. `SetModeCommand` does not know how to draw dividers or format text; it simply requests a "Prompt Block" or "Result Block," leaving the visual implementation to the `Ui` class.
+
+**Why include control returns for `void` methods?**
+Strict adherence to the synchronous execution model ensures that no message is lost and the application state is updated only after the user acknowledgment is fully processed.
+
 ---
 
 ## Appendix A: Non-Functional Requirements

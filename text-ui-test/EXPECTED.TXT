@@ -3,7 +3,7 @@
  No existing profile found. Creating new profile...
 --------------------------------------------------------------------------------
 Welcome to TradeLog!
-Commands: add, list, edit, delete, filter, compare, summary, encrypt, undo, exit
+Commands: add, list, edit, delete, filter, compare, summary, encrypt, undo, mode, exit
 Strategy shortcuts:
 BB = Breakout
 TBF = Trend Bar Failure
@@ -15,6 +15,7 @@ MR = Mean Reversion
 TR = Trading Range
 DB = Double Bottom
 DT = Double Top
+Current System Mode: [BACKTEST]
 --------------------------------------------------------------------------------
 Encryption is currently disabled.
 --------------------------------------------------------------------------------
@@ -47,35 +48,23 @@ Trade successfully added.
 1. AAPL | 2026-02-18 | Long | E:180 | TP:190 | SL:170 | Win | Breakout
 2. TSLA | 2026-02-19 | Short | E:400 | TP:380 | SL:410 | Win | Pullback
 --------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-1. AAPL | 2026-02-18 | Long | E:180 | TP:190 | SL:170 | Win | Breakout
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-Overall Performance:
-
-Total Trades: 1
-Win Rate: 100%
-Average Win: 1.00R
-Average Loss: 0.00R
-Overall EV: +1.00R
-Total R: +1.00R
---------------------------------------------------------------------------------
+No trades found matching: strat/Breakout
 --------------------------------------------------------------------------------
 Strategy Comparison:
 
 Breakout:
-Trades: 1
-Win Rate: 100%
-Average Win: 1.00R
-Average Loss: 0.00R
-EV: +1.000R
+  Trades: 1
+  Win Rate: 100%
+  Average Win: 1.00R
+  Average Loss: 0.00R
+  EV: +1.000R
 
 Pullback:
-Trades: 1
-Win Rate: 100%
-Average Win: 2.00R
-Average Loss: 0.00R
-EV: +2.000R
+  Trades: 1
+  Win Rate: 100%
+  Average Win: 2.00R
+  Average Loss: 0.00R
+  EV: +2.000R
 
 --------------------------------------------------------------------------------
 Trade 2 updated successfully.

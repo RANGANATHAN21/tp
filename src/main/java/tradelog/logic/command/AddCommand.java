@@ -1,10 +1,12 @@
 package tradelog.logic.command;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 
 import tradelog.exception.TradeLogException;
 import tradelog.logic.parser.ArgumentTokeniser;
 import tradelog.logic.parser.ParserUtil;
+import tradelog.model.ModeManager;
 import tradelog.model.Trade;
 import tradelog.model.TradeList;
 import tradelog.storage.Storage;
@@ -73,6 +75,20 @@ public class AddCommand extends Command {
         assert tradeList != null : "TradeList should not be null when executing add";
         assert ui != null : "Ui should not be null when executing add";
         assert addTrade != null : "addTrade object should have been successfully created in constructor";
+
+        ModeManager modeManager = ModeManager.getInstance(); // This handles initialization safely
+        LocalDate today = LocalDate.now();
+
+        if (modeManager.isLive()) {
+            if (!LocalDate.parse(addTrade.getDate()).equals(today)) {
+                throw new TradeLogException("LIVE Mode: Only today's trades can be added.");
+            }
+        }
+
+        // SAFE ASSERTION: No side effects because modeManager is already initialized
+        assert !modeManager.isLive() || addTrade.getDate().equals(today.toString())
+                : "Trade date must be today when in LIVE mode";
+
         int initialSize = tradeList.size();
 
         if (tradeList.contains(addTrade)) {
@@ -89,6 +105,12 @@ public class AddCommand extends Command {
         assert lastTrade.getTicker().equals(addTrade.getTicker()) : "Last trade ticker should match added trade";
         assert lastTrade.getEntryPrice() == addTrade.getEntryPrice() : "Last trade entryPrice should match added trade";
         assert lastTrade.getStrategy().equals(addTrade.getStrategy()) : "Last trade strategy should match added trade";
+
+        try {
+            storage.saveTrades(tradeList);
+        } catch (Exception e) {
+            ui.showError("Warning: Changes made but failed to save to disk: " + e.getMessage());
+        }
 
         ui.printTrade(addTrade);
         ui.showTradeAdded();

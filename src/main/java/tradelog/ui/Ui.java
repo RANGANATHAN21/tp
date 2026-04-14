@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import tradelog.logic.command.StrategyStats;
 import tradelog.logic.parser.ParserUtil;
+import tradelog.model.ModeManager;
 import tradelog.model.Trade;
 import tradelog.model.TradeList;
 
@@ -16,16 +17,16 @@ public class Ui {
 
     private static final String DIVIDER = "-".repeat(80);
     private static final String COMMAND_LIST =
-            "Commands: add, list, edit, delete, filter, compare, summary, encrypt, undo, exit";
+            "Commands: add, list, edit, delete, filter, compare, summary, encrypt, undo, mode, exit";
     private static final String STRATEGY_SHORTCUTS_HEADER = "Strategy shortcuts:";
     private static final Logger logger = Logger.getLogger(Ui.class.getName());
     private final java.util.Scanner scanner = new java.util.Scanner(System.in);
 
     /**
-    * Reads a command from the user.
-    *
-    * @return The command entered by the user.
-    */
+     * Reads a command from the user.
+     *
+     * @return The command entered by the user.
+     */
     public String readCommand() {
         if (scanner.hasNextLine()) {
             return scanner.nextLine().trim();
@@ -39,12 +40,26 @@ public class Ui {
         System.out.println("Welcome to TradeLog!");
         System.out.println(COMMAND_LIST);
         showStrategyShortcuts();
+        showCurrentMode(); // New: Display current mode on startup
         showLine();
         logger.log(Level.INFO, "Welcome message displayed.");
     }
 
+    /**
+     * Displays the current operating mode (LIVE or BACKTEST).
+     */
+    public void showCurrentMode() {
+        ModeManager modeManager = ModeManager.getInstance();
+        assert modeManager != null : "ModeManager must be initialized before showing mode";
+
+        String modeName = modeManager.isLive() ? "LIVE" : "BACKTEST";
+        System.out.println("Current System Mode: [" + modeName + "]");
+        logger.log(Level.INFO, "Current mode displayed: {0}", modeName);
+    }
+
     private void showStrategyShortcuts() {
         Map<String, String> strategyShortcuts = ParserUtil.getStrategyShortcuts();
+        assert strategyShortcuts != null : "Strategy shortcuts map should not be null";
 
         logger.log(Level.INFO, "Displaying {0} strategy shortcuts.",
                 strategyShortcuts.size());
@@ -80,7 +95,6 @@ public class Ui {
 
     /**
      * Prints all trades in the given TradeList, numbered from 1.
-     * Prints an empty-list message if there are no trades.
      *
      * @param tradeList The list of trades to display.
      */
@@ -101,11 +115,10 @@ public class Ui {
     }
 
     /**
-     * Prints the trades at the specified original indices, preserving their
-     * numbering from the full trade list.
+     * Prints the trades at the specified original indices.
      *
      * @param tradeList The full list of trades.
-     * @param indices The zero-based indices of trades to print.
+     * @param indices   The zero-based indices of trades to print.
      */
     public void printIndexedTrades(TradeList tradeList, java.util.List<Integer> indices) {
         assert tradeList != null : "TradeList should not be null";
@@ -135,53 +148,28 @@ public class Ui {
         showLine();
     }
 
-    /** Prints a message confirming a trade was added. */
     public void showTradeAdded() {
         System.out.println("Trade successfully added.");
-        logger.log(Level.INFO, "Trade added confirmation displayed.");
     }
 
-    /** Prints a message confirming a trade was deleted. */
     public void showTradeDeleted() {
         System.out.println("Trade successfully deleted.");
-        logger.log(Level.INFO, "Trade deleted confirmation displayed.");
     }
 
-    /**
-     * Prints a message confirming a trade was updated.
-     *
-     * @param index The 1-based index of the updated trade.
-     */
     public void showTradeUpdated(int index) {
         assert index > 0 : "Index should be a positive integer";
         System.out.println("Trade " + index + " updated successfully.");
-        logger.log(Level.INFO, "Trade {0} updated confirmation displayed.", index);
     }
 
-    /** Prints a message when no trades are available for the summary. */
     public void showSummaryEmpty() {
         showLine();
         System.out.println("No trades available to generate a summary.");
         showLine();
-        logger.log(Level.INFO, "Empty summary message displayed.");
     }
 
-    /**
-     * Prints the overall performance summary.
-     *
-     * @param totalTrades   Total number of trades.
-     * @param winRate       Win rate as a percentage.
-     * @param averageWin    Average winning R value.
-     * @param averageLoss   Average losing R value.
-     * @param expectedValue Overall expected value per trade.
-     * @param totalR        Total R gained or lost.
-     */
     public void showSummary(int totalTrades, double winRate, double averageWin,
                             double averageLoss, double expectedValue, double totalR) {
         assert totalTrades > 0 : "Total trades should be greater than zero";
-        assert winRate >= 0 && winRate <= 100 : "Win rate should be between 0 and 100";
-        assert averageWin >= 0 : "Average win should be non-negative";
-        assert averageLoss >= 0 : "Average loss should be non-negative";
 
         logger.log(Level.INFO, "Displaying summary for {0} trades.", totalTrades);
 
@@ -198,16 +186,8 @@ public class Ui {
         showLine();
     }
 
-    /**
-     * Prints performance metrics grouped by strategy.
-     *
-     * @param strategyComparison Map of strategy names to their aggregated metrics.
-     */
     public void showStrategyComparison(Map<String, StrategyStats> strategyComparison) {
         assert strategyComparison != null : "Strategy comparison data should not be null";
-
-        logger.log(Level.INFO, "Displaying strategy comparison for {0} strategies.",
-                strategyComparison.size());
 
         showLine();
         System.out.println("Strategy Comparison:\n");
@@ -217,66 +197,36 @@ public class Ui {
             String evSign = strategyStats.getExpectedValue() >= 0 ? "+" : "-";
 
             System.out.println(strategyName + ":");
-            System.out.println("Trades: " + strategyStats.getTradeCount());
-            System.out.printf("Win Rate: %.0f%%%n", strategyStats.getWinRate());
-            System.out.printf("Average Win: %.2fR%n", strategyStats.getAverageWin());
-            System.out.printf("Average Loss: %.2fR%n", strategyStats.getAverageLoss());
-            System.out.printf("EV: %s%.3fR%n%n", evSign,
-                    Math.abs(strategyStats.getExpectedValue()));
+            System.out.println("  Trades: " + strategyStats.getTradeCount());
+            System.out.printf("  Win Rate: %.0f%%%n", strategyStats.getWinRate());
+            System.out.printf("  Average Win: %.2fR%n", strategyStats.getAverageWin());
+            System.out.printf("  Average Loss: %.2fR%n", strategyStats.getAverageLoss());
+            System.out.printf("  EV: %s%.3fR%n%n", evSign, Math.abs(strategyStats.getExpectedValue()));
         }
         showLine();
     }
 
-    /** Prints a message confirming the most recent action was undone. */
     public void showUndoSuccess() {
         System.out.println("Most recent change has been undone.");
-        logger.log(Level.INFO, "Undo success message displayed.");
     }
 
-    /** Prints a message when there is no previous action to undo. */
     public void showUndoUnavailable() {
         System.out.println("There is no action to undo.");
-        logger.log(Level.INFO, "Undo unavailable message displayed.");
     }
 
-    /**
-     * Reads a password from the user.
-     *
-     * @param prompt The prompt to display.
-     * @return The password entered by the user.
-     */
     public String readPassword(String prompt) {
         System.out.print(prompt);
-        if (scanner.hasNextLine()) {
-            return scanner.nextLine();
-        }
-        return null;
+        return scanner.hasNextLine() ? scanner.nextLine() : "";
     }
 
-    /**
-     * Prints a prompt and reads a plain line of text from the user.
-     *
-     * @param prompt The prompt to display.
-     * @return The trimmed line entered by the user.
-     */
     public String readLine(String prompt) {
         System.out.print(prompt);
-        if (scanner.hasNextLine()) {
-            return scanner.nextLine().trim();
-        }
-        return null;
+        return scanner.hasNextLine() ? scanner.nextLine().trim() : "";
     }
 
-    /**
-     * Prints an error message to the user.
-     *
-     * @param message The error message to display.
-     */
     public void showError(String message) {
         assert message != null : "Error message should not be null";
-
-        logger.log(Level.WARNING, "Error displayed to user: {0}", message);
-
+        logger.log(Level.WARNING, "Error displayed: {0}", message);
         showLine();
         System.out.println("Error: " + message);
         showLine();
@@ -285,5 +235,28 @@ public class Ui {
     public void closeScanner() {
         scanner.close();
         logger.log(Level.INFO, "Scanner closed.");
+    }
+
+    /**
+     * Displays a standalone message wrapped in dividers.
+     * Used for errors or status checks to ensure consistent "mode" styling.
+     * @param message The message to display.
+     */
+    public void showModeSimpleMessage(String message) {
+        showLine();
+        System.out.println(message);
+        showLine();
+    }
+
+    /**
+     * Displays the warning and prompt block, then immediately closes it with a divider.
+     * The user will provide input AFTER the divider appears.
+     */
+    public void showModePromptBlock(String current, String target) {
+        showLine();
+        System.out.println("Preparing to switch from " + current + " to " + target + "...");
+        System.out.println(tradelog.model.ModeManager.getInstance().getWarningMessage());
+        System.out.println("\nEnter 'yes' to confirm the switch, or any other key to cancel: ");
+        showLine(); // Divider appears BEFORE user input
     }
 }

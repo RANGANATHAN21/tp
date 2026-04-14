@@ -1,7 +1,9 @@
 package tradelog.logic.command;
 
+import org.junit.jupiter.api.BeforeEach; // Added import
 import org.junit.jupiter.api.Test;
 
+import tradelog.model.ModeManager; // Added import
 import tradelog.model.Trade;
 import tradelog.model.TradeList;
 import tradelog.storage.Storage;
@@ -13,6 +15,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Tests for UndoCommand.
  */
 public class UndoCommandTest {
+
+    @BeforeEach
+    public void setUp() {
+        // Reset ModeManager to BACKTEST before each test for consistency
+        ModeManager.getInstance().setLive(false);
+    }
 
     /**
      * Tests undo after adding a trade.
@@ -104,5 +112,24 @@ public class UndoCommandTest {
         undo.execute(tradeList, ui, storage);
 
         assertEquals(0, tradeList.size());
+    }
+
+    // Added ModeManager Assertions
+
+    /**
+     * Verifies that UndoCommand operates correctly even in LIVE mode.
+     */
+    @Test
+    public void execute_liveMode_operatesCorrectly() {
+        ModeManager.getInstance().setLive(true);
+        TradeList tradeList = new TradeList();
+        Ui ui = new Ui();
+
+        UndoCommand.saveState(tradeList);
+        tradeList.addTrade(new Trade("AAPL", "2026-04-14", "Long", 100, 110, 95, "Breakout"));
+
+        new UndoCommand().execute(tradeList, ui, null);
+
+        assertEquals(0, tradeList.size(), "UndoCommand should function in LIVE mode.");
     }
 }

@@ -1,6 +1,9 @@
 package tradelog.logic.command;
 
+import org.junit.jupiter.api.BeforeEach; // Added import
 import org.junit.jupiter.api.Test;
+
+import tradelog.model.ModeManager; // Added import
 import tradelog.model.Trade;
 import tradelog.model.TradeList;
 import tradelog.storage.Storage;
@@ -24,6 +27,12 @@ class ListCommandTest {
             System.setOut(original);
         }
         return buffer.toString();
+    }
+
+    @BeforeEach
+    public void setUp() {
+        // Reset ModeManager to BACKTEST before each test for consistency
+        ModeManager.getInstance().setLive(false);
     }
 
     @Test
@@ -69,5 +78,24 @@ class ListCommandTest {
     @Test
     public void isExit_listCommand_returnsFalse() {
         assertFalse(new ListCommand().isExit());
+    }
+
+    // Added ModeManager Assertions
+
+    /**
+     * Verifies that ListCommand functions correctly in LIVE mode.
+     */
+    @Test
+    public void execute_liveMode_operatesCorrectly() {
+        ModeManager.getInstance().setLive(true);
+        TradeList tradeList = new TradeList();
+        tradeList.addTrade(new Trade("AAPL", "2026-02-18", "Long", 180.0, 190.0, 170.0, "Breakout"));
+        Ui ui = new Ui();
+        Storage storage = new Storage("./data/trades.txt");
+
+        ListCommand command = new ListCommand();
+        String output = captureOutput(() -> command.execute(tradeList, ui, storage));
+
+        assertTrue(output.contains("AAPL"), "ListCommand should successfully display trades in LIVE mode.");
     }
 }

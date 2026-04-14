@@ -2,6 +2,7 @@ package tradelog.logic.command;
 
 /**
  * Stores aggregate performance metrics for a single strategy.
+ * Used by CompareCommand to present strategy-based analytics.
  */
 public class StrategyStats {
 
@@ -47,7 +48,7 @@ public class StrategyStats {
     /**
      * Returns the win rate percentage for this strategy.
      *
-     * @return The win rate as a percentage.
+     * @return The win rate as a percentage (0-100).
      */
     public double getWinRate() {
         if (tradeCount == 0) {
@@ -61,7 +62,7 @@ public class StrategyStats {
     /**
      * Returns the average positive R-multiple for this strategy.
      *
-     * @return The average win.
+     * @return The average win in R.
      */
     public double getAverageWin() {
         if (winCount == 0) {
@@ -75,7 +76,7 @@ public class StrategyStats {
     /**
      * Returns the average losing R-multiple as a positive value.
      *
-     * @return The average loss.
+     * @return The average loss in R.
      */
     public double getAverageLoss() {
         if (lossCount == 0) {
@@ -87,7 +88,7 @@ public class StrategyStats {
     }
 
     /**
-     * Returns the expected value for this strategy.
+     * Returns the expected value (EV) for this strategy.
      *
      * @return The expected value in R.
      */

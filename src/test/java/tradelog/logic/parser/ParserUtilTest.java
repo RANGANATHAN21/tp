@@ -3,11 +3,20 @@ package tradelog.logic.parser;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.junit.jupiter.api.BeforeEach; // Added import
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate; // Added import
 import tradelog.exception.TradeLogException;
+import tradelog.model.ModeManager; // Added import
 
 public class ParserUtilTest {
+
+    @BeforeEach
+    public void setUp() {
+        // Reset ModeManager to BACKTEST before each test for consistency
+        ModeManager.getInstance().setLive(false);
+    }
 
     @Test
     public void parseStrategy_knownShortcut_returnsExpandedName() {
@@ -83,5 +92,29 @@ public class ParserUtilTest {
     public void parseDirection_invalidDirection_throwsTradeLogException() {
         assertThrows(TradeLogException.class, () -> ParserUtil.parseDirection("up"));
         assertThrows(TradeLogException.class, () -> ParserUtil.parseDirection(""));
+    }
+
+    // Added ModeManager Assertions
+
+    /**
+     * Verifies that dates other than today are rejected when the system is in LIVE mode.
+     */
+    @Test
+    public void parseDate_liveModeHistoricalDate_throwsTradeLogException() {
+        ModeManager.getInstance().setLive(true);
+        String yesterday = LocalDate.now().minusDays(1).toString();
+
+        assertThrows(TradeLogException.class, () -> ParserUtil.parseDate(yesterday));
+    }
+
+    /**
+     * Verifies that today's date is accepted even when the system is in LIVE mode.
+     */
+    @Test
+    public void parseDate_liveModeCurrentDate_success() throws TradeLogException {
+        ModeManager.getInstance().setLive(true);
+        String today = LocalDate.now().toString();
+
+        assertEquals(today, ParserUtil.parseDate(today));
     }
 }

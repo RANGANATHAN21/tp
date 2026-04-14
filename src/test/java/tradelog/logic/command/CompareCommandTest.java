@@ -9,6 +9,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import tradelog.model.ModeManager; // Added import
 import tradelog.model.Trade;
 import tradelog.model.TradeList;
 import tradelog.storage.Storage;
@@ -43,6 +44,9 @@ public class CompareCommandTest {
         tradeList = new TradeList();
         dummyStorage = new Storage("dummy_compare_storage.txt");
         mockUi = new MockUi();
+
+        // Reset ModeManager to BACKTEST before each test for consistency
+        ModeManager.getInstance().setLive(false);
     }
 
     @Test
@@ -100,6 +104,27 @@ public class CompareCommandTest {
         StrategyStats breakoutStats = mockUi.capturedComparison.get("Breakout");
         assertEquals(3, breakoutStats.getTradeCount());
         assertEquals(66.667, breakoutStats.getWinRate(), 0.001);
+    }
+
+    // Added ModeManager Assertions
+
+    /**
+     * Verifies that CompareCommand works correctly regardless of whether LIVE mode is active,
+     * as it is a read-only analysis command.
+     */
+    @Test
+    public void execute_liveMode_operatesCorrectly() {
+        ModeManager.getInstance().setLive(true);
+        tradeList.addTrade(new Trade("AAPL", "2026-03-01", "Long",
+                100, 120, 90, "Breakout"));
+
+        CompareCommand command = new CompareCommand();
+        command.execute(tradeList, mockUi, dummyStorage);
+
+        assertEquals(1, mockUi.capturedComparison.size(), "CompareCommand should work in LIVE mode.");
+
+        //avoid data race
+        ModeManager.getInstance().setLive(false);
     }
 
     @Test

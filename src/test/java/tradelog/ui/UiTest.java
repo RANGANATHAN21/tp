@@ -1,7 +1,9 @@
 package tradelog.ui;
 
+import org.junit.jupiter.api.BeforeEach; // Added import
 import org.junit.jupiter.api.Test;
 import tradelog.logic.command.StrategyStats;
+import tradelog.model.ModeManager; // Added import
 import tradelog.model.Trade;
 import tradelog.model.TradeList;
 
@@ -25,6 +27,12 @@ class UiTest {
             System.setOut(original);
         }
         return buffer.toString();
+    }
+
+    @BeforeEach
+    public void setUp() {
+        // Reset ModeManager to BACKTEST before each test for consistency
+        ModeManager.getInstance().setLive(false);
     }
 
     @Test
@@ -73,8 +81,9 @@ class UiTest {
     public void showWelcome_containsCommandList() {
         Ui ui = new Ui();
         String output = captureOutput(ui::showWelcome);
+        // Update mode
         assertTrue(output.contains(
-                "Commands: add, list, edit, delete, filter, compare, summary, encrypt, undo, exit"));
+                "Commands: add, list, edit, delete, filter, compare, summary, encrypt, undo, mode, exit"));
     }
 
     @Test
@@ -174,8 +183,8 @@ class UiTest {
 
         assertTrue(output.contains("Overall EV: -1.25R"));
         assertTrue(output.contains("Total R: -2.50R"));
-        assertFalse(output.contains("--1.25R"));
-        assertFalse(output.contains("--2.50R"));
+        assertFalse(output.contains("--1.25R"), "Should not have double negative signs");
+        assertFalse(output.contains("--2.50R"), "Should not have double negative signs");
     }
 
     @Test

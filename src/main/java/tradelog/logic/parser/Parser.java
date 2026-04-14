@@ -12,6 +12,7 @@ import tradelog.logic.command.SummaryCommand;
 import tradelog.logic.command.FilterCommand;
 import tradelog.logic.command.EncryptCommand;
 import tradelog.logic.command.UndoCommand;
+import tradelog.logic.command.SetModeCommand; // Import added
 
 /**
  * Parses raw user input and translates it into executable Command objects.
@@ -40,6 +41,7 @@ public class Parser {
         case "summary" -> new SummaryCommand();
         case "encrypt" -> new EncryptCommand(arguments);
         case "undo" -> new UndoCommand();
+        case "mode" -> new SetModeCommand(arguments);
         case "exit" -> new ExitCommand();
         default -> throw new TradeLogException(
                 "Unknown command: '" + commandWord + "'. Please try again.");

@@ -1,5 +1,6 @@
 package tradelog.logic.command;
 
+import tradelog.model.ModeManager;
 import tradelog.model.Trade;
 import tradelog.model.TradeList;
 import tradelog.storage.Storage;
@@ -7,7 +8,7 @@ import tradelog.ui.Ui;
 
 /**
  * Represents a command to calculate and view the overall performance summary.
- * Handles both the mathematical calculations of the TradeList and the UI output.
+ * Provides a read-only analysis of all trades, regardless of current mode.
  */
 public class SummaryCommand extends Command {
 
@@ -23,6 +24,9 @@ public class SummaryCommand extends Command {
     public void execute(TradeList tradeList, Ui ui, Storage storage) {
         assert tradeList != null : "TradeList should not be null when executing summary";
         assert ui != null : "Ui should not be null when executing summary";
+
+        // Initialize ModeManager for environmental consistency checks
+        ModeManager modeManager = ModeManager.getInstance();
 
         if (tradeList.isEmpty()) {
             ui.showSummaryEmpty();
@@ -65,10 +69,18 @@ public class SummaryCommand extends Command {
         assert averageLoss >= 0 : "Average loss should be non-negative";
 
         double expectedValue = totalR / totalTrades;
+
+        // Final integrity check using local modeManager variable to avoid side effects
+        assert modeManager != null : "ModeManager must be initialized before summary completion";
         assert Math.abs(expectedValue - (totalR / totalTrades)) < 1e-10 :
                 "EV should be totalR divided by totalTrades";
         assert Math.abs(totalR - (totalWinR - totalLossR)) < 1e-10 :
                 "totalR should equal totalWinR - totalLossR";
+
+        // Functional behavior: Inform user if viewing comprehensive summary in LIVE mode
+        if (modeManager.isLive()) {
+            ui.showMessage("[LIVE Mode Active] Displaying overall historical performance.");
+        }
 
         ui.showSummary(totalTrades, winRate, averageWin, averageLoss, expectedValue, totalR);
     }

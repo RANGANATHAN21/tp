@@ -1,5 +1,6 @@
 package tradelog.logic.command;
 
+import tradelog.model.ModeManager;
 import tradelog.model.TradeList;
 import tradelog.storage.Storage;
 import tradelog.ui.Ui;
@@ -19,6 +20,13 @@ public class ExitCommand extends Command {
      */
     @Override
     public void execute(TradeList tradeList, Ui ui, Storage storage) {
+        assert tradeList != null : "TradeList should not be null during exit";
+        assert ui != null : "Ui should not be null during exit";
+
+        // Initialize ModeManager to ensure consistency during the shutdown phase
+        ModeManager modeManager = ModeManager.getInstance();
+        assert modeManager != null : "ModeManager must be initialized before exit";
+
         ui.showGoodbye();
     }
 

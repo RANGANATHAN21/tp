@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import tradelog.exception.TradeLogException;
+import tradelog.model.ModeManager; // Added import
 import tradelog.model.Trade;
 import tradelog.model.TradeList;
 import tradelog.storage.Storage;
@@ -62,6 +63,9 @@ public class DeleteCommandTest {
         // Add two dummy trades so we have data to delete
         tradeList.addTrade(new Trade("AAPL", "2023-10-10", "long", 150.0, 160.0, 140.0, "Trend"));
         tradeList.addTrade(new Trade("TSLA", "2023-10-11", "short", 200.0, 180.0, 210.0, "Breakout"));
+
+        // Reset ModeManager to BACKTEST before each test for consistency
+        ModeManager.getInstance().setLive(false);
     }
 
     /**
@@ -166,5 +170,33 @@ public class DeleteCommandTest {
                 () -> new DeleteCommand(invalidArgs));
 
         assertTrue(exception.getMessage().contains("positive integer"));
+    }
+
+    // Added ModeManager Assertions
+
+    /**
+     * Verifies that deleting historical trades in LIVE mode is restricted.
+     * Note: Based on the stack trace, this implementation throws a TradeLogException
+     * instead of just showing an error via the UI.
+     */
+    @Test
+    public void execute_liveModeDeleteHistorical_throwsTradeLogException() throws TradeLogException {
+        // Arrange
+        ModeManager.getInstance().setLive(true);
+        DeleteCommand command = new DeleteCommand("1");
+
+        // Act & Assert
+        // We wrap the execute call in assertThrows because the stack trace shows
+        // line 66 of DeleteCommand.java throws this exception.
+        TradeLogException exception = assertThrows(TradeLogException.class, () ->
+                command.execute(tradeList, mockUi, dummyStorage)
+        );
+
+        // Verify the error message inside the exception
+        assertTrue(exception.getMessage().contains("LIVE Mode: Historical trades cannot be deleted"),
+                "Exception message should explain that historical deletion is restricted in LIVE mode.");
+
+        // Verify the state remains unchanged
+        assertEquals(2, tradeList.size(), "TradeList size should remain 2 as deletion was blocked.");
     }
 }

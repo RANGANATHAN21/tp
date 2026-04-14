@@ -3,6 +3,7 @@ package tradelog.logic.command;
 import java.util.ArrayList;
 import java.util.List;
 
+import tradelog.model.ModeManager;
 import tradelog.model.Trade;
 import tradelog.model.TradeList;
 import tradelog.storage.Storage;
@@ -47,23 +48,35 @@ public class UndoCommand extends Command {
         assert tradeList != null : "TradeList should not be null when executing undo";
         assert ui != null : "Ui should not be null when executing undo";
 
+        // Access ModeManager to ensure environmental consistency
+        ModeManager modeManager = ModeManager.getInstance();
+
         if (previousState == null) {
             ui.showUndoUnavailable();
             return;
         }
 
-        // Clear current list from the back
+        // SAFE ASSERTION: No side effects for singleton access
+        assert modeManager != null : "ModeManager must be initialized during undo execution";
+
+        // Clear current list from the back to preserve index integrity during deletion
         while (!tradeList.isEmpty()) {
             tradeList.deleteTrade(tradeList.size() - 1);
         }
 
-        // Restore saved state
+        // Restore saved state from the deep copy
         for (Trade trade : previousState) {
             tradeList.addTrade(copyTrade(trade));
         }
 
-        // One-step undo only
+        // One-step undo only: Clear state after successful restoration
         previousState = null;
+
+        try {
+            storage.saveTrades(tradeList);
+        } catch (Exception e) {
+            ui.showError("Undo successful in memory, but failed to update storage: " + e.getMessage());
+        }
 
         ui.showUndoSuccess();
     }

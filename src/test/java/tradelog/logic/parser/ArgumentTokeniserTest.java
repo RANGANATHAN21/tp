@@ -1,9 +1,11 @@
 package tradelog.logic.parser;
 
+import org.junit.jupiter.api.BeforeEach; // Added import
 import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 
 import tradelog.exception.TradeLogException;
+import tradelog.model.ModeManager; // Added import
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -15,6 +17,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Ensures that user input strings are correctly split into mapped arguments.
  */
 public class ArgumentTokeniserTest {
+
+    @BeforeEach
+    public void setUp() {
+        // Reset ModeManager to BACKTEST before each test for consistency
+        ModeManager.getInstance().setLive(false);
+    }
 
     /**
      * Tests if the tokeniser correctly extracts values when multiple valid prefixes are present.

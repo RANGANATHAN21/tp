@@ -1,0 +1,62 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+' 隐藏底部的重复对象框
+hide footbox
+
+actor User
+participant ":SetModeCommand" as Logic
+participant ":ModeManager" as MM
+participant ":Ui" as UI
+
+User -> Logic : execute()
+activate Logic
+
+Logic -> MM : getInstance()
+activate MM
+MM --> Logic : instance: ModeManager
+deactivate MM
+
+Logic -> MM : getCurrentMode()
+activate MM
+MM --> Logic : currentMode: EnvironmentMode
+deactivate MM
+
+Logic -> UI : showModePromptBlock("BACKTEST", "LIVE")
+activate UI
+UI -> MM : getWarningMessage()
+activate MM
+MM --> UI : warningMessage: String
+deactivate MM
+UI --> Logic
+deactivate UI
+
+User -> UI : readCommand()
+activate UI
+UI --> Logic : response: String
+deactivate UI
+
+Logic -> UI : showLine()
+activate UI
+UI --> Logic
+deactivate UI
+
+alt response.equals("yes")
+    Logic -> MM : setMode(LIVE)
+    activate MM
+    MM --> Logic
+    deactivate MM
+    
+    Logic -> UI : showModeResultBlock("SUCCESS: Environment mode set to LIVE.")
+    activate UI
+    UI --> Logic
+    deactivate UI
+else else
+    Logic -> UI : showModeResultBlock("Mode switch aborted by user.")
+    activate UI
+    UI --> Logic
+    deactivate UI
+end
+
+deactivate Logic
+@endum

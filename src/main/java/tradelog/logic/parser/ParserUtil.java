@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import tradelog.exception.TradeLogException;
+import tradelog.model.ModeManager;
 
 /**
  * Utility class containing methods for parsing and validating specific data types.
@@ -86,23 +87,45 @@ public class ParserUtil {
     }
 
     /**
-     * Parses and validates a date string in YYYY-MM-DD format.
+     * Parses and validates a date string in YYYY-MM-DD format with mode-specific logic.
+     * * Functional Behavior:
+     * 1. If dateString is empty and mode is LIVE, returns today's date.
+     * 2. If mode is LIVE, restricts manual entry to current date only.
+     * 3. If mode is BACKTEST, allows any valid historical date.
      *
      * @param dateString The raw date string from the user.
-     * @return The trimmed date string if valid.
-     * @throws TradeLogException If the date is not in YYYY-MM-DD format or is not a real date.
+     * @return The validated or automatically generated date string.
+     * @throws TradeLogException If the date violates operational mode restrictions.
      */
     public static String parseDate(String dateString) throws TradeLogException {
-        if (dateString == null || dateString.trim().isEmpty()) {
-            throw new TradeLogException("Date cannot be empty.");
+        ModeManager modeManager = ModeManager.getInstance();
+        LocalDate today = LocalDate.now();
+
+        // Functional modification: Auto-fill today's date in LIVE mode if empty
+        if ((dateString == null || dateString.trim().isEmpty())) {
+            if (modeManager.isLive()) {
+                logger.log(Level.INFO, "LIVE mode: Empty date input, defaulting to today.");
+                return today.toString();
+            }
+            throw new TradeLogException("Date cannot be empty in Backtest mode.");
         }
+
+        String trimmedDate = dateString.trim();
+        LocalDate parsedDate;
+
         try {
-            LocalDate.parse(dateString.trim(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            parsedDate = LocalDate.parse(trimmedDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         } catch (DateTimeParseException e) {
-            throw new TradeLogException("Invalid date \"" + dateString.trim()
-                    + "\". Please use YYYY-MM-DD format (e.g. 2026-02-18).");
+            throw new TradeLogException("Invalid date format. Please use YYYY-MM-DD.");
         }
-        return dateString.trim();
+
+        // Functional modification: Strict enforcement for LIVE environment
+        if (modeManager.isLive() && !parsedDate.equals(today)) {
+            throw new TradeLogException("FUNCTIONAL ERROR: Live mode only allows trades for today ("
+                    + today + "). To log historical data, switch to backtest mode.");
+        }
+
+        return trimmedDate;
     }
 
     /**

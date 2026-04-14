@@ -1,10 +1,12 @@
 package tradelog.logic.command;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 import tradelog.exception.TradeLogException;
 import tradelog.logic.parser.ArgumentTokeniser;
 import tradelog.logic.parser.ParserUtil;
+import tradelog.model.ModeManager;
 import tradelog.model.Trade;
 import tradelog.model.TradeList;
 import tradelog.storage.Storage;
@@ -76,6 +78,17 @@ public class EditCommand extends Command {
         Trade tradeToEdit = tradeList.getTrade(targetIndex);
         assert tradeToEdit != null : "Trade object to edit should not be null";
 
+        // Mode logic check: Prevent editing historical trades in LIVE mode
+        if (ModeManager.getInstance().isLive()) {
+            LocalDate tradeDate = LocalDate.parse(tradeToEdit.getDate());
+            if (!tradeDate.equals(LocalDate.now())) {
+                throw new TradeLogException("LIVE Mode: Historical trades cannot be edited.");
+            }
+            if (parsedArgs.containsKey("d/")) {
+                throw new TradeLogException("LIVE Mode: Date modification is locked.");
+            }
+        }
+
         // 1. Parse and stage updated values in local variables (Pre-computation)
         String newTicker = parsedArgs.containsKey("t/")
                 ? ParserUtil.parseTicker(parsedArgs.get("t/")) : tradeToEdit.getTicker();
@@ -93,17 +106,14 @@ public class EditCommand extends Command {
                 ? ParserUtil.parseStrategy(parsedArgs.get("strat/"))
                 : tradeToEdit.getStrategy();
 
-        // 2. Business Logic Validation (Reusing teammate's methods)
-        // Step A: Ensure entry and stop loss are not the same
+        // 2. Business Logic Validation
         ParserUtil.validatePrices(newEntry, newStop);
-
-        // Step B: Ensure stop loss is on the correct side
         ParserUtil.validateStopLoss(newDir, newEntry, newStop);
 
         // Save state only after all parsing/validation succeeds
         UndoCommand.saveState(tradeList);
 
-        // 3. Atomicity: Commit changes only if ALL previous steps (Parsing & Validation) passed
+        // 3. Atomicity: Commit changes
         tradeToEdit.setTicker(newTicker);
         tradeToEdit.setDate(newDate);
         tradeToEdit.setDirection(newDir);
@@ -111,7 +121,6 @@ public class EditCommand extends Command {
         tradeToEdit.setExitPrice(newExit);
         tradeToEdit.setStopLossPrice(newStop);
         tradeToEdit.setStrategy(newStrat);
-
 
         try {
             storage.saveTrades(tradeList);

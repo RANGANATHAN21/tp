@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import tradelog.exception.TradeLogException;
+import tradelog.model.ModeManager; // Added import
 import tradelog.model.Trade;
 import tradelog.model.TradeList;
 import tradelog.storage.Storage;
@@ -39,6 +40,9 @@ public class EditCommandTest {
         // Use a clean path for testing and ensure no encryption conflicts
         storage = new Storage("test_edit_storage.txt");
         storage.setPassword("testpassword"); // Match your StorageTest behavior
+
+        // Reset ModeManager to BACKTEST before each test for consistency
+        ModeManager.getInstance().setLive(false);
     }
 
     private void assertTradeUnchanged(int index, String ticker, String date, String dir,
@@ -142,5 +146,21 @@ public class EditCommandTest {
     @Test
     public void constructor_noPrefixes_throwsTradeLogException() {
         assertThrows(TradeLogException.class, () -> new EditCommand("1"));
+    }
+
+    // Added ModeManager Assertions
+
+    /**
+     * Verifies that editing historical trades in LIVE mode is restricted.
+     */
+    @Test
+    public void execute_liveModeEditHistorical_throwsTradeLogException() throws TradeLogException {
+        ModeManager.getInstance().setLive(true);
+        EditCommand command = new EditCommand("1 t/TSLA");
+
+        assertThrows(TradeLogException.class, () -> command.execute(tradeList, ui, storage));
+
+        // Ensure state remains INIT_TICKER
+        assertEquals(INIT_TICKER, tradeList.getTrade(0).getTicker());
     }
 }

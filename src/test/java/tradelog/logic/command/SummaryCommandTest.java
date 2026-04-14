@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import tradelog.model.ModeManager; // Added import
 import tradelog.model.Trade;
 import tradelog.model.TradeList;
 import tradelog.storage.Storage;
@@ -87,6 +88,9 @@ public class SummaryCommandTest {
         tradeList = new TradeList();
         dummyStorage = new Storage("dummy_summary_storage.txt");
         mockUi = new MockUi();
+
+        // Reset ModeManager to BACKTEST before each test for consistency
+        ModeManager.getInstance().setLive(false);
     }
 
     /**
@@ -138,5 +142,21 @@ public class SummaryCommandTest {
         assertEquals(0.5, mockUi.capturedAverageLoss, 0.001, "Average loss should be 0.5R");
         assertEquals(1.5, mockUi.capturedTotalR, 0.001, "Total R should be 1.5R");
         assertEquals(0.5, mockUi.capturedExpectedValue, 0.001, "Expected Value should be 0.5R");
+    }
+
+    // Added ModeManager Assertions
+
+    /**
+     * Verifies that SummaryCommand functions correctly in LIVE mode.
+     */
+    @Test
+    public void execute_liveMode_operatesCorrectly() {
+        ModeManager.getInstance().setLive(true);
+        tradeList.addTrade(new Trade("AAPL", "2026-04-14", "Long", 100, 110, 95, "Breakout"));
+
+        SummaryCommand command = new SummaryCommand();
+        command.execute(tradeList, mockUi, dummyStorage);
+
+        assertEquals(1, mockUi.capturedTotalTrades, "SummaryCommand should work correctly in LIVE mode.");
     }
 }
